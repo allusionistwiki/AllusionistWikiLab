@@ -15,3 +15,8 @@
 .echothread .et-auth-providers {
   gap: 0.4rem;
 }
+
+/* 空状態（Be the first to comment / Start the conversation…）は非表示 */
+.echothread .et-empty-state {
+  display: none;
+}
