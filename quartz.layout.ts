@@ -9,6 +9,20 @@ export const sharedPageComponents: SharedLayout = {
   header: [],
   afterBody: [
     Component.Cusdis({ appId: "REPLACE_WITH_APP_ID" }),
+    Component.Comments({
+      provider: "giscus",
+      options: {
+        repo: "allusionistwiki/AllusionistWikiLab",
+        repoId: "1418734555",
+        category: "General",
+        categoryId: "DIC_kwDOVJAr284DIaeq",
+        mapping: "pathname",
+        strict: true,
+        reactionsEnabled: true,
+        inputPosition: "bottom",
+        lang: "ja",
+      },
+    }),
   ],
   footer: Component.Footer({
     links: {
