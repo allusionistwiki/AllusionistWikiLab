@@ -8,7 +8,6 @@ export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
   afterBody: [
-    Component.EchoThread({ apiKey: "NKcLBV-1Lq91vK8wBZW42HEJU9RfxziN-xVFGyPp_Sg" }),
     Component.Comments({
       provider: "giscus",
       options: {
@@ -23,6 +22,7 @@ export const sharedPageComponents: SharedLayout = {
         lang: "ja",
       },
     }),
+    Component.EchoThread({ apiKey: "NKcLBV-1Lq91vK8wBZW42HEJU9RfxziN-xVFGyPp_Sg" }),
   ],
   footer: Component.Footer({
     links: {
