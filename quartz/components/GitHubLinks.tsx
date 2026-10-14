@@ -20,6 +20,9 @@ export default (() => {
         <h4>GitHub トラック（実験）</h4>
         <ul>
           <li>
+            <a href="https://tally.so/r/EqzzbX">誤り・reject 報告（フォーム / 匿名可）</a>
+          </li>
+          <li>
             <a href={`${base}/blob/main/${enc}`}>ソース閲覧</a>
           </li>
           <li>

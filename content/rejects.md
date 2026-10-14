@@ -6,19 +6,11 @@ comments: false
 
 # reject / 編集要求フォーム
 
-**Tally フォーム**（https://tally.so ・無料・回答側にアカウント不要）で構造化された reject・編集要求を受け付ける計画です。
+Wiki の記述に対する reject・事実誤り・編集提案・情報提供を受け付けるフォームです。匿名で投稿できます（名前・メールは任意）。
 
-## 設置手順（要ユーザー操作）
+<iframe src="https://tally.so/embed/EqzzbX?alignLeft=1&hideTitle=1&openAsPopup=0" width="100%" height="640" frameborder="0" marginheight="0" marginwidth="0" title="Wiki 指摘・編集フォーム"></iframe>
 
-1. https://tally.so でフォーム作成（GitHub/Google で無料登録）
-2. 項目を定義:
-   - **対象ページ URL**（必須）
-   - **対象 claim ID / 伏線 ID**（任意）
-   - **種別**（reject / 事実誤り / 編集提案 / 情報提供）— ラジオボタン
-   - **理由**（必須・テキストエリア）
-   - **典拠**（章・ページ番号・引用）
-   - 投稿者名（任意・匿名可）
-3. フォーム公開 → 本ページと各 Wiki ページ下部に「誤りを報告」リンクを設置
+フォームが表示されない場合は → [直接開く](https://tally.so/r/EqzzbX)
 
 ## 処理パイプライン（Phase 2）
 
