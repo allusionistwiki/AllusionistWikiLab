@@ -25,3 +25,8 @@
 .echothread .et-header {
   display: none;
 }
+
+/* 書式ヒント行（Format: **bold** · _italic_ · ~~strike~~ · ||spoiler||）は非表示 */
+.echothread .et-format-hint {
+  display: none;
+}
