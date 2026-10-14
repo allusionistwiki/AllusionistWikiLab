@@ -13,7 +13,7 @@ export const sharedPageComponents: SharedLayout = {
       provider: "giscus",
       options: {
         repo: "allusionistwiki/AllusionistWikiLab",
-        repoId: "1418734555",
+        repoId: "R_kgDOVJAr2w",
         category: "General",
         categoryId: "DIC_kwDOVJAr284DIaeq",
         mapping: "pathname",
