@@ -35,7 +35,7 @@ export default ((opts: Options) => {
           data-title={title}
           data-identifier={threadId}
           data-lang={opts.lang ?? "ja"}
-          data-theme={opts.theme ?? "light"}
+          {...(opts.theme ? { "data-theme": opts.theme } : {})}
           data-theme-source={opts.themeSource ?? "--bg"}
           data-accent-color={opts.accentColor ?? "#7f84ef"}
           data-auth-button-style={opts.authButtonStyle ?? "icons"}
