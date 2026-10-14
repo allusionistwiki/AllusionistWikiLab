@@ -27,6 +27,7 @@ const PLACEHOLDER_MAP: Record<string, string> = {
   "Your name": "お名前",
   "Email (optional, never shown)": "メール（任意・表示されません）",
   "Write a comment...": "コメント内容",
+  "Write a comment…": "コメント内容",
 }
 
 function translate(root: ParentNode): void {
@@ -49,6 +50,14 @@ function translate(root: ParentNode): void {
     const ph = (el as HTMLElement).getAttribute("placeholder")
     if (ph && PLACEHOLDER_MAP[ph]) {
       ;(el as HTMLElement).setAttribute("placeholder", PLACEHOLDER_MAP[ph])
+    }
+  })
+  // contenteditable 本体は data-placeholder 形式
+  const ce = (root as ParentNode).querySelectorAll?.("[data-placeholder]") ?? []
+  ce.forEach((el) => {
+    const ph = (el as HTMLElement).getAttribute("data-placeholder")
+    if (ph && PLACEHOLDER_MAP[ph]) {
+      ;(el as HTMLElement).setAttribute("data-placeholder", PLACEHOLDER_MAP[ph])
     }
   })
 }
