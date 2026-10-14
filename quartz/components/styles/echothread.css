@@ -7,8 +7,10 @@
 }
 
 .echothread .et-widget {
-  border-radius: 8px;
-  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  overflow: visible;
 }
 
 /* 7 プロバイダのサインイン行を compact に（ダッシュボード側で OFF にした場合は消える） */
