@@ -43,7 +43,25 @@ function translate(root: ParentNode): void {
     }
     // "N Comments" → "N件のコメント"
     const m = t.match(/^(\d+) Comments$/)
-    if (m) node.textContent = `${m[1]}件のコメント`
+    if (m) {
+      node.textContent = `${m[1]}件のコメント`
+      continue
+    }
+    // 相対時刻 "1h ago" / "5m ago" / "2d ago" → 日本語
+    const rel = t.match(/^(\d+)\s*(s|sec|secs|second|seconds|m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days|w|week|weeks|mo|month|months|y|year|years)\s+ago$/)
+    if (rel) {
+      const unitJa: Record<string, string> = {
+        s: "秒", sec: "秒", secs: "秒", second: "秒", seconds: "秒",
+        m: "分", min: "分", mins: "分", minute: "分", minutes: "分",
+        h: "時間", hr: "時間", hrs: "時間", hour: "時間", hours: "時間",
+        d: "日", day: "日", days: "日",
+        w: "週", week: "週", weeks: "週",
+        mo: "ヶ月", month: "ヶ月", months: "ヶ月",
+        y: "年", year: "年", years: "年",
+      }
+      const u = unitJa[rel[2]] ?? rel[2]
+      node.textContent = `${rel[1]}${u}前`
+    }
   }
   const inputs = (root as ParentNode).querySelectorAll?.("input, textarea") ?? []
   inputs.forEach((el) => {
