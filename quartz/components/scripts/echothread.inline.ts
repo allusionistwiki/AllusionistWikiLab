@@ -15,6 +15,7 @@ const TEXT_MAP: Record<string, string> = {
   "Most liked": "高評価順",
   "Most replied": "返信順",
   "Format:": "書式:",
+  "Powered by": "提供:",
   "Powered by EchoThread": "提供: EchoThread",
   "Be the first to comment": "最初のコメントを書こう",
   "Start the conversation — your thoughts will appear here.": "会話を始めよう — あなたの思考がここに表示されます。",
