@@ -8,7 +8,7 @@ export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
   afterBody: [
-    Component.Cusdis({ appId: "REPLACE_WITH_APP_ID" }),
+    Component.EchoThread({ apiKey: "REPLACE_WITH_API_KEY" }),
     Component.Comments({
       provider: "giscus",
       options: {
