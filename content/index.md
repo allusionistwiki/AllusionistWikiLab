@@ -12,6 +12,7 @@ date: 2026-10-14
 
 - [サンプルクレームページ](claims/sample-claim.md) — ページ下部の Cusdis コメント欄（匿名コメント可否・モデ削除手順の確認）
 - [reject / 編集要求フォーム（導線）](rejects.md) — Tally フォーム設置ガイドと受け口設計
+- [Markdown / GFM 記法 表示テスト](format-test.md) — 表・callout・数式・コード・脚注等のレンダリング確認
 
 ## 現在の実験構成
 
