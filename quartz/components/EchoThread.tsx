@@ -7,6 +7,9 @@ import { classNames } from "../util/lang"
 type Options = {
   apiKey: string
   lang?: string
+  theme?: string
+  accentColor?: string
+  authButtonStyle?: string
 }
 
 export default ((opts: Options) => {
@@ -26,6 +29,11 @@ export default ((opts: Options) => {
           id="echothread"
           data-api-key={opts.apiKey}
           data-title={title}
+          data-identifier={threadId}
+          data-lang={opts.lang ?? "ja"}
+          data-theme={opts.theme ?? "auto"}
+          data-accent-color={opts.accentColor ?? "#7f84ef"}
+          data-auth-button-style={opts.authButtonStyle ?? "icons"}
         ></div>
       </div>
     )
