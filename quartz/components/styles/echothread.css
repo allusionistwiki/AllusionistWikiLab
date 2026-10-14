@@ -20,3 +20,8 @@
 .echothread .et-empty-state {
   display: none;
 }
+
+/* ヘッダー行（件数 + 並び替えドロップダウン）は非表示（並びは data-sort="oldest" で固定） */
+.echothread .et-header {
+  display: none;
+}

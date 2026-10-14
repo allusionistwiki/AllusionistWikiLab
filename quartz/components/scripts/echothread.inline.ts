@@ -4,7 +4,7 @@ let loaded = false
 const TEXT_MAP: Record<string, string> = {
   "Your name": "お名前",
   "Email (optional, never shown)": "メール（任意・表示されません）",
-  "Write a comment...": "コメントを書く…",
+  "Write a comment...": "コメント内容",
   "Post": "投稿",
   "or sign in": "またはサインイン",
   "Like": "いいね",
@@ -26,7 +26,7 @@ const TEXT_MAP: Record<string, string> = {
 const PLACEHOLDER_MAP: Record<string, string> = {
   "Your name": "お名前",
   "Email (optional, never shown)": "メール（任意・表示されません）",
-  "Write a comment...": "コメントを書く…",
+  "Write a comment...": "コメント内容",
 }
 
 function translate(root: ParentNode): void {

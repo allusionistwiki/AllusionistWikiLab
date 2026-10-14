@@ -11,6 +11,7 @@ type Options = {
   lang?: string
   theme?: string
   themeSource?: string
+  sort?: string
   accentColor?: string
   authButtonStyle?: string
 }
@@ -39,6 +40,7 @@ export default ((opts: Options) => {
           data-theme-source={opts.themeSource ?? "--bg"}
           data-accent-color={opts.accentColor ?? "#7f84ef"}
           data-auth-button-style={opts.authButtonStyle ?? "icons"}
+          data-sort={opts.sort ?? "oldest"}
         ></div>
       </div>
     )
