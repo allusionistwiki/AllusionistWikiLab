@@ -1,0 +1,46 @@
+name: 誤り・reject 報告
+description: 記事の誤り指摘や reject 要求を構造化して伝える
+title: "[記事名] "
+labels: ["triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        入力は LLM トリアージを経由して run 化されます。直接のページ編集は行いません。
+  - type: input
+    id: page
+    attributes:
+      label: 対象ページ URL
+      placeholder: "https://allusionistwiki.github.io/AllusionistWikiLab/claims/..."
+    validations:
+      required: true
+  - type: input
+    id: claim
+    attributes:
+      label: 対象 claim / 伏線 ID（任意）
+      placeholder: "A_ch00123_..."
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 種別
+      options:
+        - reject（記述の削除・降格要求）
+        - 事実誤り（原文と矛盾）
+        - 編集提案
+        - 情報提供（典拠付き）
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 理由
+      placeholder: 何がなぜ誤りか。原文の章・ページを明記
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: 典拠（章・ページ番号・引用）
+      placeholder: "第3章 p.112「…」"
+    validations:
+      required: true

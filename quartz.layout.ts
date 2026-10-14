@@ -1,6 +1,7 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
 import CreatedModifiedMeta from "./quartz/components/CreatedModifiedMeta"
+import GitHubLinks from "./quartz/components/GitHubLinks"
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
@@ -44,6 +45,7 @@ export const defaultContentPageLayout: PageLayout = {
     Component.Explorer(),
   ],
   right: [
+    GitHubLinks(),
     Component.Graph(),
     Component.DesktopOnly(Component.TableOfContents()),
     Component.Backlinks(),

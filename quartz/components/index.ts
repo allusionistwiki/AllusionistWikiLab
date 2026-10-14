@@ -22,6 +22,7 @@ import RecentNotes from "./RecentNotes"
 import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
 import Cusdis from "./Cusdis"
+import GitHubLinks from "./GitHubLinks"
 import Flex from "./Flex"
 import ConditionalRender from "./ConditionalRender"
 
