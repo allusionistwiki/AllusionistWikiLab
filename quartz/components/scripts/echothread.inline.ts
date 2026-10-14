@@ -80,10 +80,32 @@ function translate(root: ParentNode): void {
   })
 }
 
+function relocate(): void {
+  const container = document.querySelector(".echothread")
+  const host = document.getElementById("echothread")
+  const h3 = container?.querySelector("h3")
+  if (!container || !host || !h3) return
+  // ページ・リアクション欄（0件のリアクション）を見出しの前に移動
+  const reactions = host.querySelector(".et-reactions")
+  if (reactions && reactions.parentElement === container && reactions.compareDocumentPosition(h3) & Node.DOCUMENT_POSITION_FOLLOWING) {
+    // 既に先頭
+  } else if (reactions) {
+    container.insertBefore(reactions, h3)
+  }
+  // 提供: EchoThread を見出し行の右端へ移動
+  const footer = host.querySelector(".et-footer")
+  if (footer && footer.parentElement !== h3) {
+    h3.appendChild(footer)
+  }
+}
+
 function watchWidget(): void {
   const apply = () => {
     const w = document.querySelector(".et-widget")
-    if (w) translate(w)
+    if (w) {
+      translate(w)
+      relocate()
+    }
   }
   apply()
   const host = document.getElementById("echothread")
