@@ -8,7 +8,7 @@ export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
   afterBody: [
-    Component.EchoThread({ apiKey: "REPLACE_WITH_API_KEY" }),
+    Component.EchoThread({ apiKey: "NKcLBV-1Lq91vK8wBZW42HEJU9RfxziN-xVFGyPp_Sg" }),
     Component.Comments({
       provider: "giscus",
       options: {
