@@ -1,0 +1,17 @@
+.echothread {
+  margin-top: 1rem;
+}
+
+.echothread h3 {
+  margin-bottom: 0.75rem;
+}
+
+.echothread .et-widget {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 7 プロバイダのサインイン行を compact に（ダッシュボード側で OFF にした場合は消える） */
+.echothread .et-auth-providers {
+  gap: 0.4rem;
+}

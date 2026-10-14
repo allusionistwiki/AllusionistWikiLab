@@ -1,6 +1,8 @@
 // EchoThread 埋め込み（Cusdis 後継・ホスティング型・ゲスト(無アカウント)投稿対応）
 // @ts-ignore
 import script from "./scripts/echothread.inline"
+// @ts-ignore
+import style from "./styles/echothread.css"
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 import { classNames } from "../util/lang"
 
@@ -8,6 +10,7 @@ type Options = {
   apiKey: string
   lang?: string
   theme?: string
+  themeSource?: string
   accentColor?: string
   authButtonStyle?: string
 }
@@ -24,6 +27,7 @@ export default ((opts: Options) => {
     const title = (fileData.frontmatter?.title as string) ?? threadId
     return (
       <div class={classNames(displayClass, "echothread")}>
+        <style>{style}</style>
         <h3>コメント（実験: EchoThread / 匿名ゲスト投稿可）</h3>
         <div
           id="echothread"
@@ -31,7 +35,8 @@ export default ((opts: Options) => {
           data-title={title}
           data-identifier={threadId}
           data-lang={opts.lang ?? "ja"}
-          data-theme={opts.theme ?? "auto"}
+          data-theme={opts.theme ?? "light"}
+          data-theme-source={opts.themeSource ?? "--background"}
           data-accent-color={opts.accentColor ?? "#7f84ef"}
           data-auth-button-style={opts.authButtonStyle ?? "icons"}
         ></div>
