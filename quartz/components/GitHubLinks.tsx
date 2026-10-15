@@ -22,7 +22,7 @@ export default (() => {
         <ul>
           <li>
             <a
-              href={`https://tally.so/r/EqzzbX?a0659441-65e2-42f0-bd02-ae3b38fce727=${encodeURIComponent(pageUrl)}`}
+              href={`https://tally.so/r/EqzzbX?url=${encodeURIComponent(pageUrl)}`}
             >
               誤り・reject 報告（フォーム / 匿名可・URL 自動入力）
             </a>
