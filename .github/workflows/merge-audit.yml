@@ -27,6 +27,7 @@ jobs:
 
       - name: Skip audit/revert/owner/logged commits
         id: guard
+        shell: bash
         run: |
           sha="${{ github.sha }}"
           msg=$(git log -1 --format=%s)
@@ -51,6 +52,7 @@ jobs:
           STRATA_API_URL: ${{ secrets.STRATA_API_URL }}
           STRATA_API_KEY: ${{ secrets.STRATA_API_KEY }}
           STRATA_MODEL: ${{ secrets.STRATA_MODEL }}
+        shell: bash
         run: |
           python --version
           echo "url=$STRATA_API_URL model=$STRATA_MODEL keylen=${#STRATA_API_KEY}"
@@ -62,10 +64,12 @@ jobs:
           STRATA_API_URL: ${{ secrets.STRATA_API_URL }}
           STRATA_API_KEY: ${{ secrets.STRATA_API_KEY }}
           STRATA_MODEL: ${{ secrets.STRATA_MODEL }}
+        shell: bash
         run: python scripts/audit_pr.py "${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
       - name: Revert on reject
         if: steps.audit.outputs.verdict == 'REJECT'
+        shell: bash
         run: |
           git config user.name "allusionistwiki"
           git config user.email "allusionist.wiki@gmail.com"
@@ -76,6 +80,7 @@ jobs:
         if: steps.audit.outputs.verdict == 'REJECT'
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           n=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].number')
           if [ -n "$n" ]; then
@@ -84,6 +89,7 @@ jobs:
 
       - name: Append audit log
         if: steps.guard.outputs.skip == 'false'
+        shell: bash
         run: |
           git pull --rebase
           mkdir -p audit
