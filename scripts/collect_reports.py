@@ -213,11 +213,14 @@ def main():
                 f"日時: {s['created']}\n\n"
                 f"## 理由\n\n{s['reason']}\n\n"
                 f"## 典拠\n\n{s['source']}\n\n"
-                "（Tally 回収による自動起票。トリアージ後に llm-task 等 label を付与）"
+                "（Tally 回収による自動起票。種別『編集提案』は llm-task 自動付与で実装経路へ。他種別は triage 後に人間トリアージ）"
             )
             print("[tally] new:", s["id"], s["kind"], s["reason"][:60].replace("\n", " "))
+            labels = ["triage"]
+            if s["kind"] == "編集提案":
+                labels.append("llm-task")
             if not dry:
-                make_issue(gh_token, title, body, ["triage"])
+                make_issue(gh_token, title, body, labels)
             st["tally"].append(s["id"])
             created += 1
 
