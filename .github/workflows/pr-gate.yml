@@ -41,10 +41,10 @@ jobs:
           verdict="${{ steps.checks.outputs.verdict }}"
           build="${{ steps.build.outcome }}"
           reasons="${{ steps.checks.outputs.reasons }}"
-          gh pr comment "$n" --body "pr-gate decision: verdict=$verdict build=$build reasons=$reasons"
           if [ "$verdict" = "PASS" ] && [ "$build" = "success" ]; then
-            gh pr review "$n" --approve --body "Mechanical gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate."
+            gh pr comment "$n" --body "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$verdict build=$build"
             gh pr merge "$n" --squash --delete-branch
           else
             gh pr review "$n" --request-changes --body "pr-gate FAIL: verdict=$verdict build=$build — $reasons" || true
+            gh pr comment "$n" --body "pr-gate decision: verdict=$verdict build=$build reasons=$reasons"
           fi
