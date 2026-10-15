@@ -41,9 +41,15 @@ jobs:
           verdict="${{ steps.checks.outputs.verdict }}"
           build="${{ steps.build.outcome }}"
           reasons="${{ steps.checks.outputs.reasons }}"
+          labels=$(gh pr view "$n" --json labels --jq '.labels[].name' | tr '\n' ',')
+          headmsg=$(git log -1 --format=%s "${{ github.event.pull_request.head.sha }}")
           if [ "$verdict" = "PASS" ] && [ "$build" = "success" ]; then
-            gh pr comment "$n" --body "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$verdict build=$build"
-            gh pr merge "$n" --squash --delete-branch
+            if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
+              gh pr comment "$n" --body "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
+            else
+              gh pr comment "$n" --body "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$verdict build=$build"
+              gh pr merge "$n" --squash --delete-branch
+            fi
           else
             gh pr review "$n" --request-changes --body "pr-gate FAIL: verdict=$verdict build=$build — $reasons" || true
             gh pr comment "$n" --body "pr-gate decision: verdict=$verdict build=$build reasons=$reasons"
