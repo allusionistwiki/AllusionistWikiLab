@@ -3,6 +3,10 @@ name: Post-merge audit (LLM)
 on:
   push:
     branches: [main]
+  workflow_run:
+    workflows: ["PR gate (mechanical)"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: write
@@ -22,9 +26,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Skip audit/revert commits
+      - name: Skip audit/revert/owner/logged commits
         id: guard
         run: |
+          sha="${{ github.sha }}"
           msg=$(git log -1 --format=%s)
           author=$(git log -1 --format=%ae)
           case "$msg" in
@@ -32,6 +37,10 @@ jobs:
           esac
           # Owner/admin direct pushes are trusted; audit third-party merged content only.
           if [ "$author" = "allusionist.wiki@gmail.com" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          # Dedup: already audited this sha?
+          if [ -f audit/audit-log.jsonl ] && grep -q "\"sha\":\"$sha\"\| \"sha\": \"$sha\"" audit/audit-log.jsonl; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
