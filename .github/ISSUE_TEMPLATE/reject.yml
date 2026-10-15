@@ -44,4 +44,4 @@ body:
       label: 典拠（章・ページ番号・引用）
       placeholder: "第3章 p.112「…」"
     validations:
-      required: true
+      required: false
