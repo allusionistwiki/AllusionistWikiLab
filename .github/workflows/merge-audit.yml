@@ -26,10 +26,16 @@ jobs:
         id: guard
         run: |
           msg=$(git log -1 --format=%s)
+          author=$(git log -1 --format=%ae)
           case "$msg" in
-            audit:*|Revert*) echo "skip=true" >> "$GITHUB_OUTPUT" ;;
-            *) echo "skip=false" >> "$GITHUB_OUTPUT" ;;
+            audit:*|Revert*) echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0 ;;
           esac
+          # Owner/admin direct pushes are trusted; audit third-party merged content only.
+          if [ "$author" = "allusionist.wiki@gmail.com" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Audit merged commit
         id: audit
