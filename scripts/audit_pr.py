@@ -49,7 +49,7 @@ def main() -> int:
         body = {
             "model": os.environ.get("STRATA_MODEL", "audit"),
             "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 160,
+            "max_tokens": 600,
         }
         req = urllib.request.Request(
             api.rstrip("/") + "/chat/completions",
@@ -60,16 +60,24 @@ def main() -> int:
         if key:
             req.add_header("Authorization", "Bearer " + key)
         try:
-            with urllib.request.urlopen(req, timeout=180) as r:
+            with urllib.request.urlopen(req, timeout=300) as r:
                 resp = json.loads(r.read().decode())
-            text = resp["choices"][0]["message"]["content"].strip()
+            msg = resp["choices"][0]["message"]
+            text = (msg.get("content") or "").strip()
+            if not text:
+                # reasoning models: verdict line lives in reasoning_content tail
+                text = (msg.get("reasoning_content") or "").strip()
         except Exception as exc:  # endpoint unreachable -> heuristic verdict stands
             text = "PASS api_error " + str(exc)[:80]
-        if text.startswith("SPAM"):
+        # verdict = last keyword occurrence (reasoning prose may mention them)
+        low = text.upper()
+        pos = {k: low.rfind(k) for k in ("NEEDS_HUMAN", "SPAM", "PASS")}
+        verdict_kw = max(pos, key=lambda k: pos[k]) if max(pos.values()) >= 0 else "PASS"
+        if verdict_kw == "SPAM":
             verdict = "FAIL"
-            reason = "LLM: " + text[:200]
-        elif text.startswith("NEEDS_HUMAN"):
-            reason = "LLM: " + text[:200]
+            reason = "LLM: " + text[-200:]
+        elif verdict_kw == "NEEDS_HUMAN":
+            reason = "LLM: " + text[-200:]
 
     print("verdict=" + ("REJECT" if verdict == "FAIL" else "PASS"))
     print("reason=" + reason.replace("\n", " ")[:400])
