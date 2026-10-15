@@ -141,5 +141,10 @@ function loadEchoThread(): void {
 document.addEventListener("DOMContentLoaded", () => {
   loadEchoThread()
 })
+// 初回アクセス時は postscript の実行が DOMContentLoaded より後になることがある
+// （その場合 listener は二度と発火せずウィジェットが永遠に出ない）→ 既に ready なら即実行
+if (document.readyState !== "loading") {
+  loadEchoThread()
+}
 
 export {}
