@@ -163,17 +163,22 @@ def gh_discussion_map(token):
     data = gh_graphql(
         token,
         'query { repository(owner: "allusionistwiki", name: "AllusionistWikiLab") {'
-        " discussions(first: 100) { nodes { id title } } } }",
+        " discussions(first: 100) { nodes { number title } } } }",
     )
-    return {n["title"]: n["id"] for n in data["repository"]["discussions"]["nodes"]}
+    return {n["title"]: n["number"] for n in data["repository"]["discussions"]["nodes"]}
 
 
-def gh_mirror_comment(token, disc_id, body):
-    gh_graphql(
-        token,
-        "mutation($id: ID!, $body: String!) { addComment(input: {subjectType: DISCUSSION,"
-        " discussionId: $id, body: $body}) { comment { id } } }",
-        {"id": disc_id, "body": body},
+def gh_mirror_comment(token, disc_number, body):
+    # Discussions は REST API（GraphQL addComment は Discussion を解決できない）
+    http_json(
+        f"https://api.github.com/repos/{REPO}/discussions/{disc_number}/comments",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+        data=json.dumps({"body": body}).encode(),
+        method="POST",
     )
 
 
@@ -234,7 +239,7 @@ def main():
                         f"EchoThread ミラー（バックアップ）— 投稿者: {c['author']} / {c['created']}\n\n"
                         f"{c['body']}"
                     )
-                    print("[mirror]", c["slug"], "->", disc_id[-6:])
+                    print("[mirror]", c["slug"], "-> disc", disc_id)
                     if not dry:
                         try:
                             gh_mirror_comment(gh_token, disc_id, mbody)

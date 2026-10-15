@@ -13,9 +13,23 @@ title: "システム概要: 受け口と自動パイプライン"
 | 誤り・reject を報告する | [Issue テンプレート](https://github.com/allusionistwiki/AllusionistWikiLab/issues/new?template=reject.yml) / [Tally フォーム](https://tally.so/r/EqzzbX)（匿名可） | GitHub / 不要 |
 | 編集・拡充を LLM に依頼する | Issue + `llm-task` ラベル | GitHub |
 | 自分で編集して投稿する | PR（ページ右上「編集 → PR」） | GitHub |
-| コメントする | giscus（実名）/ EchoThread（匿名） | GitHub / 不要 |
+| コメントする | EchoThread（匿名可・主運用） | 不要 |
 
 すべての入力は同じパイプライン（トリアージ → 機械ゲート → LLM 監査 → 公開）に収束し、Wiki 本体を直接汚染しません。
+
+## コメントの構成（EchoThread 主運用 + giscus バックアップ）
+
+- **表示は EchoThread のみ**（匿名ゲスト投稿可・日本語化済み）。giscus ウィジェットはページから外しました
+- **バックアップ**: 回収パイプラインが EchoThread コメントを GitHub Discussions（giscus の実体）へ自動ミラーします。コメントの内容が GitHub 側（git 連携・エクスポート可能）に二重に保存される構成です
+- 移行時の扱い: EchoThread が終了・有料化しても、Discussions 側（`gh` CLI・GitHub UI で全取得可能）に全文が残るためコメント資産を失いません
+
+## 報告の自動回収（Tally / EchoThread → Issue）
+
+フォームとコメントは毎時の回収ジョブで **triage Issue へ自動起票**されます（新規 0 件なら無通知）。
+
+- Tally 回答: 対象ページ URL・主張 ID はページ右上リンクから自動入力、名前既定値あり。種別が**「編集提案」なら `llm-task` ラベルも自動付与**（人間承認なしで実装経路へ進む。防御は機械ゲート + NO-OP 条項 + LLM 監査の 3 層）
+- EchoThread コメント: 全文 + 投稿者 + 日時を Issue 化し、同時に Discussions へミラー
+- 起票済み ID は状態ファイルで重複起票なし
 
 ## 報告のしかた（Issue）
 
@@ -92,6 +106,26 @@ PR 作成
 - 機械ゲート・監査・実装・公開はすべて自動化されており、運用コストはほぼゼロ（人間は抽查と承認ゲートのみ）
 - LLM は自前マシン（RTX 3090 Ti / Strata）でローカル実行 — API 従量課金なし
 - 公開は GitHub Pages（静的サイト）
+
+## 移行とバックアップ（データ資産の所在）
+
+| 資産 | 正（一次保存） | バックアップ / エクスポート経路 |
+|---|---|---|
+| Wiki 本文（content/） | git（本 repo） | git clone で完全移行可能 |
+| 報告・依頼（Issue / PR） | GitHub | `gh api` / `gh export` で全件取得、来歴はコミットトレーラーに二重化 |
+| コメント本文 | EchoThread | **Discussions へ自動ミラー済み**（`gh` で全取得可）。EchoThread ダッシュボードの JSON エクスポートも可 |
+| フォーム回答 | Tally | CSV エクスポート + API（`GET /forms/{id}/submissions`）。起票後は Issue として GitHub 側に残る |
+| 監査ログ | `audit/audit-log.jsonl`（git） | git 由来 |
+| 回収状態（重複防止） | 回収マシンの状態ファイル | 消失しても再起票されるだけでデータ損失なし |
+
+**本番 Wiki2 への移行手順**（Lab で板についた後の手順）:
+
+1. Tally フォームを新規作成（名前既定値 `AllusionistWiki`、hidden field `url` / `claim` + デフォルト回答の**選択**紐付け）
+2. 回収スクリプトの repo / サイト / フォーム ID / ページ一覧を本産向けに設定（ページ一覧は content ツリーから自動生成）
+3. EchoThread に本産ドメインを登録（Free 枠は 1 サイトなので Lab からの切替登録）、giscus は本産 repo の repoId（GraphQL node ID）で Discussions バックアップ継続
+4. 監査 runner と Environment secrets はそのまま（localhost 経路）、機械ゲートの守備ファイル定義のみ本産構造に調整
+
+**単一障害点と緩和**: EchoThread 障害・サービス終了 → Discussions ミラーで全文保持。Tally 障害 → 回答は CSV/API で取り出し済み、Issue 化済み分は GitHub 側に独立。runner 停止 → 機械ゲート（GitHub 側）は動き続け、LLM 監査のみ遅延。
 
 ## 関連
 
