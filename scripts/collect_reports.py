@@ -43,7 +43,10 @@ ECHO_KEY_FILE = os.path.join(SCRATCH, "echokey.txt")
 
 
 def http_json(url, headers=None, data=None, method=None):
-    req = urllib.request.Request(url, headers=headers or {}, data=data, method=method)
+    h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+         "Accept": "application/json"}
+    h.update(headers or {})
+    req = urllib.request.Request(url, headers=h, data=data, method=method)
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read().decode("utf-8"))
 
@@ -111,22 +114,33 @@ def tally_fetch_submissions(token):
     if not token:
         return None
     h = {"Authorization": f"Bearer {token}"}
-    d = http_json(f"https://api.tally.so/forms/{TALLY_FORM}/submissions", headers=h)
-    subs = d.get("data", d.get("submissions", []))
+    base = f"https://api.tally.so/forms/{TALLY_FORM}/submissions"
+    d = http_json(base, headers=h)
+    qmap = {}  # questionId -> title
+    for q in d.get("questions", []):
+        qmap[q.get("id")] = q.get("title")
     out = []
-    for s in subs:
-        data = s.get("data", {})
-        kind_uuid = data.get(TALLY_FIELDS["kind"])
+    for s in d.get("submissions", []):
+        sid = str(s.get("id"))
+        det = http_json(f"{base}/{sid}", headers=h).get("submission", {})
+        ans = {}
+        for r in det.get("responses", []):
+            title = qmap.get(r.get("questionId"), "")
+            a = r.get("answer")
+            if isinstance(a, list):
+                a = "・".join(str(x) for x in a)
+            ans[title] = str(a) if a is not None else ""
+        kind = ans.get("種別", "")
         out.append({
-            "id": str(s.get("id")),
-            "url": data.get(TALLY_FIELDS["url"], ""),
-            "claim": data.get(TALLY_FIELDS["claim"], ""),
-            "kind": TALLY_KINDS.get(kind_uuid, kind_uuid or ""),
-            "reason": data.get(TALLY_FIELDS["reason"], ""),
-            "source": data.get(TALLY_FIELDS["source"], ""),
-            "name": data.get(TALLY_FIELDS["name"], ""),
-            "email": data.get(TALLY_FIELDS["email"], ""),
-            "created": s.get("created_at", ""),
+            "id": sid,
+            "url": ans.get("対象ページの URL", ""),
+            "claim": ans.get("対象の主張 ID", ""),
+            "kind": kind,
+            "reason": ans.get("理由", ""),
+            "source": ans.get("根拠・出典", ""),
+            "name": ans.get("名前", ""),
+            "email": ans.get("メール", ""),
+            "created": det.get("submittedAt") or det.get("createdAt", ""),
         })
     return out
 
