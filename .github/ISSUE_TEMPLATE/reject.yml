@@ -11,9 +11,10 @@ body:
     id: page
     attributes:
       label: 対象ページ URL
+      description: ページ右上の「報告」リンクから遷移すると自動で入力されます。違うページを指す場合だけ書き換えてください
       placeholder: "https://allusionistwiki.github.io/AllusionistWikiLab/claims/..."
     validations:
-      required: true
+      required: false
   - type: input
     id: claim
     attributes:

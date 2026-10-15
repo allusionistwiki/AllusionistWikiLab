@@ -15,12 +15,15 @@ export default (() => {
       `対象ページ: ${title}\nURL: ${SITE}/${fileData.slug}\n\n`,
     )
     const base = `https://github.com/${REPO}`
+    const pageUrl = `${SITE}/${fileData.slug}`
     return (
       <div class="github-links">
         <h4>GitHub トラック（実験）</h4>
         <ul>
           <li>
-            <a href="https://tally.so/r/EqzzbX">誤り・reject 報告（フォーム / 匿名可）</a>
+            <a href={`https://tally.so/r/EqzzbX?ref=${encodeURIComponent(pageUrl)}`}>
+              誤り・reject 報告（フォーム / 匿名可）
+            </a>
           </li>
           <li>
             <a href={`${base}/blob/main/${enc}`}>ソース閲覧</a>
@@ -33,9 +36,9 @@ export default (() => {
           </li>
           <li>
             <a
-              href={`${base}/issues/new?title=${encodeURIComponent(`[${title}] `)}&body=${issueBody}`}
+              href={`${base}/issues/new?template=reject.yml&title=${encodeURIComponent(`[${title}] `)}&page=${encodeURIComponent(pageUrl)}`}
             >
-              誤り・reject 報告（Issue）
+              誤り・reject 報告（Issue / URL 自動入力）
             </a>
           </li>
         </ul>
