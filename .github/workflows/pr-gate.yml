@@ -25,7 +25,6 @@ jobs:
         id: checks
         run: |
           python3 scripts/pr_gate_checks.py "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" | tee /dev/stdout | tr -d '\r' >> "$GITHUB_OUTPUT"
-          echo "debug-verdict=$(grep -o 'verdict=[A-Z]*' <<< "$(python3 scripts/pr_gate_checks.py "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")" | head -1)" >> "$GITHUB_OUTPUT"
 
       - name: Build check
         id: build
@@ -41,10 +40,11 @@ jobs:
           n=${{ github.event.pull_request.number }}
           verdict="${{ steps.checks.outputs.verdict }}"
           build="${{ steps.build.outcome }}"
-          echo "gate decision: verdict=$verdict build=$build reasons=${{ steps.checks.outputs.reasons }}"
+          reasons="${{ steps.checks.outputs.reasons }}"
+          gh pr comment "$n" --body "pr-gate decision: verdict=$verdict build=$build reasons=$reasons"
           if [ "$verdict" = "PASS" ] && [ "$build" = "success" ]; then
             gh pr review "$n" --approve --body "Mechanical gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate."
             gh pr merge "$n" --squash --delete-branch
           else
-            gh pr review "$n" --request-changes --body "pr-gate FAIL: verdict=$verdict build=$build — ${{ steps.checks.outputs.reasons }}"
+            gh pr review "$n" --request-changes --body "pr-gate FAIL: verdict=$verdict build=$build — $reasons" || true
           fi
