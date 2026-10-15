@@ -29,7 +29,7 @@ def main() -> int:
     stat = sh(f"git show {sha} -m --first-parent --stat")[:2000]
     diff = sh(f"git show {sha} -m --first-parent --patch")[:20000]
 
-    out = sh(f"python3 scripts/pr_gate_checks.py {sha}^1 {sha}")
+    out = sh(f'"{sys.executable}" scripts/pr_gate_checks.py {sha}^1 {sha}')
     verdict, reason = "PASS", "heuristic ok"
     for line in out.splitlines():
         if line.startswith("verdict="):

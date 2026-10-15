@@ -18,9 +18,7 @@ concurrency:
 
 jobs:
   audit:
-    # After registering the Strata machine as a self-hosted runner, switch to:
-    #   runs-on: [self-hosted, strata]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, strata]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,7 +51,7 @@ jobs:
           STRATA_API_URL: ${{ secrets.STRATA_API_URL }}
           STRATA_API_KEY: ${{ secrets.STRATA_API_KEY }}
           STRATA_MODEL: ${{ secrets.STRATA_MODEL }}
-        run: python3 scripts/audit_pr.py "${{ github.sha }}" >> "$GITHUB_OUTPUT"
+        run: python scripts/audit_pr.py "${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
       - name: Revert on reject
         if: steps.audit.outputs.verdict == 'REJECT'
