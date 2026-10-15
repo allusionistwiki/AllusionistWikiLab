@@ -145,6 +145,38 @@ def tally_fetch_submissions(token):
     return out
 
 
+def gh_graphql(token, query, variables=None):
+    payload = json.dumps({"query": query, "variables": variables or {}}).encode()
+    d = http_json(
+        "https://api.github.com/graphql",
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+        data=payload,
+        method="POST",
+    )
+    if "errors" in d:
+        raise RuntimeError(json.dumps(d["errors"])[:200])
+    return d["data"]
+
+
+def gh_discussion_map(token):
+    """giscus 対応: スレッド title == pathname（例 AllusionistWikiLab/claims/sample-claim）。"""
+    data = gh_graphql(
+        token,
+        'query { repository(owner: "allusionistwiki", name: "AllusionistWikiLab") {'
+        " discussions(first: 100) { nodes { id title } } } }",
+    )
+    return {n["title"]: n["id"] for n in data["repository"]["discussions"]["nodes"]}
+
+
+def gh_mirror_comment(token, disc_id, body):
+    gh_graphql(
+        token,
+        "mutation($id: ID!, $body: String!) { addComment(input: {subjectType: DISCUSSION,"
+        " discussionId: $id, body: $body}) { comment { id } } }",
+        {"id": disc_id, "body": body},
+    )
+
+
 def make_issue(gh_token, title, body, labels):
     if not gh_token:
         print("[issue] no gh token, skip:", title)
@@ -175,24 +207,42 @@ def main():
 
     # EchoThread
     if echo_key:
-        seen = set(st["echo"])
+        seen_issue = set(st["echo"])
+        seen_mirror = set(st.get("echo_mirror", []))
+        disc_map = gh_discussion_map(gh_token) if gh_token else {}
         for c in echo_fetch_comments(echo_key, lab_pages()):
-            if c["id"] in seen:
-                continue
-            title = f"[{c['slug']}] EchoThread 報告"
-            body = (
-                f"対象ページ: {c['page_url']}\n"
-                f"URL: {c['page_url']}\n"
-                f"投稿者: {c['author']}（EchoThread / 匿名投稿の可能性あり）\n"
-                f"日時: {c['created']}\n\n"
-                f"## 内容\n\n{c['body']}\n\n"
-                "（Tally/EchoThread 回収による自動起票。トリアージ後に種別 label を付与）"
-            )
-            print("[echo] new:", c["id"], c["slug"], c["body"][:60].replace("\n", " "))
-            if not dry:
-                make_issue(gh_token, title, body, ["triage"])
-            st["echo"].append(c["id"])
-            created += 1
+            if c["id"] not in seen_issue:
+                title = f"[{c['slug']}] EchoThread 報告"
+                body = (
+                    f"対象ページ: {c['page_url']}\n"
+                    f"URL: {c['page_url']}\n"
+                    f"投稿者: {c['author']}（EchoThread / 匿名投稿の可能性あり）\n"
+                    f"日時: {c['created']}\n\n"
+                    f"## 内容\n\n{c['body']}\n\n"
+                    "（Tally/EchoThread 回収による自動起票。種別『編集提案』は llm-task 自動付与で実装経路へ。他種別は triage 後に人間トリアージ）"
+                )
+                print("[echo] new:", c["id"], c["slug"], c["body"][:60].replace("\n", " "))
+                if not dry:
+                    make_issue(gh_token, title, body, ["triage"])
+                st["echo"].append(c["id"])
+                created += 1
+            # giscus バックアップミラー（Discussions、表示は EchoThread のみ）
+            if c["id"] not in seen_mirror:
+                disc_id = disc_map.get(f"AllusionistWikiLab/{c['slug']}")
+                if disc_id:
+                    mbody = (
+                        f"EchoThread ミラー（バックアップ）— 投稿者: {c['author']} / {c['created']}\n\n"
+                        f"{c['body']}"
+                    )
+                    print("[mirror]", c["slug"], "->", disc_id[-6:])
+                    if not dry:
+                        try:
+                            gh_mirror_comment(gh_token, disc_id, mbody)
+                            st.setdefault("echo_mirror", []).append(c["id"])
+                        except Exception as e:
+                            print("[mirror] fail:", e)
+                else:
+                    print("[mirror] no giscus thread for", c["slug"])
 
     # Tally
     subs = tally_fetch_submissions(tally_token)

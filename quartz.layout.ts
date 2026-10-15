@@ -8,20 +8,7 @@ export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
   afterBody: [
-    Component.Comments({
-      provider: "giscus",
-      options: {
-        repo: "allusionistwiki/AllusionistWikiLab",
-        repoId: "R_kgDOVJAr2w",
-        category: "General",
-        categoryId: "DIC_kwDOVJAr284DIaeq",
-        mapping: "pathname",
-        strict: true,
-        reactionsEnabled: true,
-        inputPosition: "bottom",
-        lang: "ja",
-      },
-    }),
+    // 一次: giscus 表示（コメントは EchoThread 主運用、giscus は Discussions バックアップミラーのみ）
     Component.EchoThread({ apiKey: "NKcLBV-1Lq91vK8wBZW42HEJU9RfxziN-xVFGyPp_Sg" }),
   ],
   footer: Component.Footer({
