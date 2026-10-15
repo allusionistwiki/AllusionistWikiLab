@@ -21,8 +21,10 @@ export default (() => {
         <h4>GitHub トラック（実験）</h4>
         <ul>
           <li>
-            <a href={`https://tally.so/r/EqzzbX?ref=${encodeURIComponent(pageUrl)}`}>
-              誤り・reject 報告（フォーム / 匿名可）
+            <a
+              href={`https://tally.so/r/EqzzbX?a0659441-65e2-42f0-bd02-ae3b38fce727=${encodeURIComponent(pageUrl)}`}
+            >
+              誤り・reject 報告（フォーム / 匿名可・URL 自動入力）
             </a>
           </li>
           <li>
