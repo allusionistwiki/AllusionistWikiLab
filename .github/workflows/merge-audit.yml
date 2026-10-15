@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   audit:
+    environment: strata-audit
     runs-on: [self-hosted, strata]
     steps:
       - uses: actions/checkout@v4
@@ -43,6 +44,16 @@ jobs:
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Runner+secrets connectivity check
+        if: steps.guard.outputs.skip == 'true'
+        env:
+          STRATA_API_URL: ${{ secrets.STRATA_API_URL }}
+          STRATA_API_KEY: ${{ secrets.STRATA_API_KEY }}
+          STRATA_MODEL: ${{ secrets.STRATA_MODEL }}
+        run: |
+          python --version
+          echo "url=$STRATA_API_URL model=$STRATA_MODEL keylen=${#STRATA_API_KEY}"
 
       - name: Audit merged commit
         id: audit
