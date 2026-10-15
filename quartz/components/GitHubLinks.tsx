@@ -16,15 +16,20 @@ export default (() => {
     )
     const base = `https://github.com/${REPO}`
     const pageUrl = `${SITE}/${fileData.slug}`
+    // 主張 ID 自動入力: claims/ 配下のページは slug 末尾が主張 ID
+    const claimId = fileData.slug.startsWith("claims/")
+      ? fileData.slug.slice("claims/".length)
+      : ""
+    const claimQ = claimId ? `&claim=${encodeURIComponent(claimId)}` : ""
     return (
       <div class="github-links">
         <h4>GitHub トラック（実験）</h4>
         <ul>
           <li>
             <a
-              href={`https://tally.so/r/EqzzbX?url=${encodeURIComponent(pageUrl)}`}
+              href={`https://tally.so/r/EqzzbX?url=${encodeURIComponent(pageUrl)}${claimQ}`}
             >
-              誤り・reject 報告（フォーム / 匿名可・URL 自動入力）
+              誤り・reject 報告（フォーム / 匿名可・URL・主張 ID 自動入力）
             </a>
           </li>
           <li>
@@ -38,9 +43,9 @@ export default (() => {
           </li>
           <li>
             <a
-              href={`${base}/issues/new?template=reject.yml&title=${encodeURIComponent(`[${title}] `)}&page=${encodeURIComponent(pageUrl)}`}
+              href={`${base}/issues/new?template=reject.yml&title=${encodeURIComponent(`[${title}] `)}&page=${encodeURIComponent(pageUrl)}${claimQ}`}
             >
-              誤り・reject 報告（Issue / URL 自動入力）
+              誤り・reject 報告（Issue / URL・主張 ID 自動入力）
             </a>
           </li>
         </ul>
