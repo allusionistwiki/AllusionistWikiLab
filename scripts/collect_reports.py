@@ -203,6 +203,7 @@ def make_issue(gh_token, title, body, labels):
 
 def main():
     dry = "--dry-run" in sys.argv
+    tally_only = "--tally-only" in sys.argv
     st = load_state()
     gh_token = open(GH_TOKEN_FILE, encoding="utf-8").read().strip() if os.path.exists(GH_TOKEN_FILE) else ""
     echo_key = open(ECHO_KEY_FILE, encoding="utf-8").read().strip() if os.path.exists(ECHO_KEY_FILE) else ""
@@ -211,7 +212,7 @@ def main():
     created = 0
 
     # EchoThread
-    if echo_key:
+    if echo_key and not tally_only:
         seen_issue = set(st["echo"])
         seen_mirror = set(st.get("echo_mirror", []))
         disc_map = gh_discussion_map(gh_token) if gh_token else {}
