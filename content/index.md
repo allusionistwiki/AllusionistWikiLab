@@ -16,6 +16,7 @@ date: 2026-10-14
 - [Markdown / GFM 記法 表示テスト](format-test.md) — 表・callout・数式・コード・脚注等のレンダリング確認
 - [伏線台帳（試験用）](foreshadow-test.md) — llm-task（LLM 編集依頼）で作成された試験ページ
 - [シナモリアキラ（異名表記まとめ）](entities/cinnamon-riakira.md) — llm-task（Issue #20）で作成された異名・筆名のまとめページ
+- [Playground（遊び場）](playground/index.md) — スキーマ検証を受けない自由記述層。仮説・マクロ考察・LLM 対話ログを置き、Core 層への「昇格」で知識化する（設計図: [昇格プロトコル](playground/promotion.md)）
 
 ## 現在の構成
 
