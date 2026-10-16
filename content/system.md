@@ -31,6 +31,24 @@ title: "システム概要: 受け口と自動パイプライン"
 - EchoThread コメント: 全文 + 投稿者 + 日時を Issue 化し、同時に Discussions へミラー
 - 起票済み ID は状態ファイルで重複起票なし
 
+### 回収頻度と API コスト（毎時にした理由）
+
+回収は「pull 型（聞きに行く）」なので頻度はこちらの設定次第です。1 回あたりのリクエスト数はリポジトリ数ではなく、**EchoThread はページ数、Tally は新規回答数**に比例します。
+
+| 経路 | 1 回あたりのリクエスト数 | 根拠 |
+|---|---|---|
+| EchoThread | ページ数 × 2（thread 取得 + comments 取得） | embed API が `page_url` キーでスレッドを返す作り。対象は content/ 配下の全ページ |
+| Tally | 1 + 新規回答数（一覧 1 本 + 新規 submission 詳細） | 通常 1〜2 本 |
+| GitHub（Issue 起票・コメント） | 数本 | 5,000 本/時の制限に対して無視できる量 |
+
+- **GitHub 由来の入力（Issue / PR / ラベル付与）は毎時polling ではない** — Actions が数秒で発火するイベント駆動（poll 制約なし）
+- Lab 規模（約 10 ページ）では毎時で約 20 リクエスト/時。Tally API は Free で無料・制限緩め、EchoThread 公開 API は bot トラフィックに敏感なため**毎時は安全域**（10〜15 分刻みも実運用範囲、1 分刻みは遮断リスク）
+- **本番 Wiki2（約 7,400 ページ）へ持ち込むと 1 回約 15,000 リクエストで破綻する**。本番移行時の設計:
+  1. 対象を「コメントが 1 件以上あるページ」に絞る（初回のみ全ページ、以後は既知スレッド + 新規は sitemap 差分検知）
+  2. EchoThread ダッシュボードの JSON エクスポート（日次 1 本）+ 起票済み ID 差分
+  3. 収集頻度を日次に落とす
+- さらに速くしたい場合の選択肢: cron を 15 分刻みに（無料）/ Tally Webhook（Starter $5/月、送信直後に受け取る完全プッシュ型、受信エンドポイントが必要）
+
 ## 報告のしかた（Issue）
 
 1. [Issues → New issue → 誤り・reject 報告](https://github.com/allusionistwiki/AllusionistWikiLab/issues/new?template=reject.yml) を開く
