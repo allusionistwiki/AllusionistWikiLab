@@ -81,27 +81,41 @@ jobs:
         if: steps.audit.outputs.verdict == 'REJECT'
         env:
           GH_TOKEN: ${{ github.token }}
+          REASON: ${{ steps.audit.outputs.reason }}
+          SHA: ${{ github.sha }}
+          IS_OWNER: ${{ steps.guard.outputs.is_owner }}
         shell: bash
         run: |
-          n=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].number')
+          n=$(gh api "repos/${{ github.repository }}/commits/${SHA}/pulls" --jq '.[0].number')
           mode="reverted"
-          if [ "${{ steps.guard.outputs.is_owner }}" = "true" ]; then mode="ADVISORY (owner edit, not reverted)"; fi
+          if [ "$IS_OWNER" = "true" ]; then mode="ADVISORY (owner edit, not reverted)"; fi
           if [ -n "$n" ]; then
-            gh pr comment "$n" --body "Post-merge audit REJECT ($mode): ${{ steps.audit.outputs.reason }} — commit ${{ github.sha }}"
+            gh pr comment "$n" --body "Post-merge audit REJECT ($mode): $REASON — commit $SHA"
           fi
 
       - name: Append audit log
         if: steps.guard.outputs.skip == 'false'
+        env:
+          VERDICT: ${{ steps.audit.outputs.verdict }}
+          REASON: ${{ steps.audit.outputs.reason }}
+          SHA: ${{ github.sha }}
         shell: bash
         run: |
           git pull --rebase
           mkdir -p audit
-          printf '{"ts":"%s","sha":"%s","verdict":"%s","reason":"%s"}\n' \
-            "$(date -u +%FT%TZ)" "${{ github.sha }}" \
-            "${{ steps.audit.outputs.verdict }}" "${{ steps.audit.outputs.reason }}" \
-            >> audit/audit-log.jsonl
+          python - <<'PY'
+          import json, os, datetime
+          rec = {
+              "ts": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "sha": os.environ["SHA"],
+              "verdict": os.environ["VERDICT"],
+              "reason": os.environ["REASON"],
+          }
+          with open("audit/audit-log.jsonl", "a", encoding="utf-8") as f:
+              f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+          PY
           git config user.name "allusionistwiki"
           git config user.email "allusionist.wiki@gmail.com"
           git add audit/audit-log.jsonl
-          git commit -m "audit: ${{ github.sha }} verdict=${{ steps.audit.outputs.verdict }}"
+          git commit -m "audit: $SHA verdict=$VERDICT"
           git push
