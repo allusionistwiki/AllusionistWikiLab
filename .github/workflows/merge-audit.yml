@@ -3,6 +3,12 @@ name: Post-merge audit (LLM)
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Ref (branch/sha) to audit; defaults to the dispatched ref
+        required: false
+        type: string
   workflow_run:
     workflows: ["PR gate (mechanical)"]
     types: [completed]

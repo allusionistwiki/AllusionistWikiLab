@@ -15,6 +15,10 @@ concurrency:
 jobs:
   gate:
     runs-on: ubuntu-latest
+    outputs:
+      verdict: ${{ steps.checks.outputs.verdict }}
+      build: ${{ steps.build.outcome }}
+      reasons: ${{ steps.checks.outputs.reasons }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,30 +37,45 @@ jobs:
           npm ci
           npx quartz build
 
+  # Merge on the self-hosted Windows service runner so the owner PAT file is
+  # reachable. Merges must land as owner pushes: GITHUB_TOKEN merges do NOT
+  # fire the post-merge audit + deploy workflows.
+  merge:
+    needs: gate
+    runs-on: [self-hosted, Windows, X64]
+    env:
+      PAT_FILE: C:/Users/d5dx/AppData/Local/hermes/profiles/awiki2/secrets/ghtok.txt
+      N: ${{ github.event.pull_request.number }}
+      VERDICT: ${{ needs.gate.outputs.verdict }}
+      BUILD: ${{ needs.gate.outputs.build }}
+      REASONS: ${{ needs.gate.outputs.reasons }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      REPO: ${{ github.repository }}
+    steps:
       - name: Review and auto-merge
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PAT_FILE: C:/Users/d5dx/AppData/Local/hermes/profiles/awiki2/secrets/ghtok.txt
+        shell: bash
         run: |
-          n=${{ github.event.pull_request.number }}
-          verdict="${{ steps.checks.outputs.verdict }}"
-          build="${{ steps.build.outcome }}"
-          reasons="${{ steps.checks.outputs.reasons }}"
-          labels=$(gh pr view "$n" --json labels --jq '.labels[].name' | tr '\n' ',')
-          headmsg=$(git log -1 --format=%s "${{ github.event.pull_request.head.sha }}")
-          if [ "$verdict" = "PASS" ] && [ "$build" = "success" ]; then
+          set -euo pipefail
+          API="https://api.github.com/repos/$REPO"
+          PAT=$(tr -d '\r\n' < "$PAT_FILE")
+          comment() {
+            payload=$(python -c 'import json,sys;print(json.dumps({"body":sys.argv[1]}))' "$1")
+            curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
+          }
+          labels=$(curl -s -H "Authorization: Bearer $PAT" "$API/issues/$N" | python -c "import sys,json;print(','.join(l['name'] for l in json.load(sys.stdin).get('labels',[])))")
+          headmsg=$(curl -s -H "Authorization: Bearer $PAT" "$API/commits/$HEAD_SHA" | python -c "import sys,json;print(json.load(sys.stdin)['commit']['message'].splitlines()[0])")
+          if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
-              gh pr comment "$n" --body "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
+              comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
             else
-              gh pr comment "$n" --body "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$verdict build=$build"
-              # merge with PAT (owner) so the merge push triggers deploy + audit
-              # (GITHUB_TOKEN merges do NOT fire workflows)
-              if [ -f "$PAT_FILE" ]; then
-                export GH_TOKEN=$(cat "$PAT_FILE")
-              fi
-              gh pr merge "$n" --squash --delete-branch
+              comment "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$VERDICT build=$BUILD"
+              code=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d '{"merge_method":"squash"}' "$API/pulls/$N/merge")
+              echo "merge http=$code"
+              [ "$code" = "204" ] || exit 1
+              head_ref=$(curl -s -H "Authorization: Bearer $PAT" "$API/pulls/$N" | python -c "import sys,json;print(json.load(sys.stdin)['head']['ref'])")
+              curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $PAT" "$API/git/refs/heads/$head_ref" || true
             fi
           else
-            gh pr review "$n" --request-changes --body "pr-gate FAIL: verdict=$verdict build=$build — $reasons" || true
-            gh pr comment "$n" --body "pr-gate decision: verdict=$verdict build=$build reasons=$reasons"
+            curl -s -o /dev/null -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Content-Type: application/json" -d "{\"action\":\"request_changes\",\"body\":\"pr-gate FAIL: verdict=$VERDICT build=$BUILD — $REASONS\"}" "$API/pulls/$N/reviews" || true
+            comment "pr-gate decision: verdict=$VERDICT build=$BUILD reasons=$REASONS"
           fi
