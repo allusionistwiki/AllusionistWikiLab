@@ -6,7 +6,7 @@ jobs:
   probe:
     if: startsWith(github.event.issue.title, 'probe-runner')
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 15
+    timeout-minutes: 18
     steps:
       - name: probe
         shell: bash
@@ -16,15 +16,8 @@ jobs:
         run: |
           set -uo pipefail
           export PYTHONUNBUFFERED=1
-          "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
-          CPID=$!
-          sleep 45
-          echo "=== windowed procs ==="
-          tasklist //v //fo csv 2>/dev/null | grep -ai "python\|hermes\|uv" | head -12
-          echo "=== tree ==="
-          tasklist //fo tree 2>/dev/null | grep -ai "python\|hermes\|uv\|conhost\|cmd" | head -20
-          echo "=== chat1.log ==="
-          wc -c "$RUNNER_TEMP/chat1.log"
-          tail -10 "$RUNNER_TEMP/chat1.log"
-          taskkill //T //F //PID $CPID 2>&1 | head -3
+          echo "start=$(date +%T)"
+          timeout 900 "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1
+          echo "CHAT_RC=$? end=$(date +%T)"
+          tail -25 "$RUNNER_TEMP/chat1.log"
           exit 0
