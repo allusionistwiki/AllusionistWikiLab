@@ -36,6 +36,7 @@ jobs:
       - name: Review and auto-merge
         env:
           GH_TOKEN: ${{ github.token }}
+          PAT_FILE: C:/Users/d5dx/AppData/Local/hermes/profiles/awiki2/secrets/ghtok.txt
         run: |
           n=${{ github.event.pull_request.number }}
           verdict="${{ steps.checks.outputs.verdict }}"
@@ -48,6 +49,11 @@ jobs:
               gh pr comment "$n" --body "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
             else
               gh pr comment "$n" --body "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$verdict build=$build"
+              # merge with PAT (owner) so the merge push triggers deploy + audit
+              # (GITHUB_TOKEN merges do NOT fire workflows)
+              if [ -f "$PAT_FILE" ]; then
+                export GH_TOKEN=$(cat "$PAT_FILE")
+              fi
               gh pr merge "$n" --squash --delete-branch
             fi
           else
