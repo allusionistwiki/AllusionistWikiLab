@@ -13,17 +13,19 @@ jobs:
         env:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
           HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
+          PYSPY_EXE: C:/Users/d5dx/.local/bin/py-spy.exe
         run: |
           set -uo pipefail
           export PYTHONUNBUFFERED=1
           "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
           CPID=$!
           sleep 90
-          PY=$(wmic process where "name='python.exe'" get processid,creationdate /format:csv 2>/dev/null | tail -2 | head -1 | cut -d, -f2)
+          PY=$(tasklist //fo csv //fi "IMAGENAME eq python.exe" | tr -d '"' | awk -F',' 'NR>1 && $2+0>0 {print $2}' | while read p; do
+                 ct=$(powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter 'ProcessId=$p').CreationDate.ToString('yyyyMMddHHmmss')" 2>/dev/null | tr -dc '0-9')
+                 echo "$ct $p"
+               done | sort | tail -1 | cut -d' ' -f2)
           echo "latest python pid=$PY"
-          UV="C:/Users/d5dx/AppData/Local/hermes/bin/uv.exe"
-          test -x "$UV" || UV=uv
-          "$UV" tool run --from py-spy py-spy dump --pid "$PY" 2>&1 | head -60
+          "$PYSPY_EXE" dump --pid "$PY" 2>&1 | head -70
           wc -c "$RUNNER_TEMP/chat1.log"
           taskkill //T //F //PID $CPID 2>&1 | head -2
           exit 0
