@@ -1,0 +1,36 @@
+name: Issue auto-triage (edit proposal -> llm-task)
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-label edit proposals
+        env:
+          N: ${{ github.event.issue.number }}
+          BODY: ${{ github.event.issue.body }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'EOF'
+          import os, re, subprocess
+          body = os.environ["BODY"]
+          m = re.search(r'#+\s*種別\s*\n+(.*?)(?=\n#+\s|\Z)', body, re.S)
+          kind = m.group(1).strip() if m else ""
+          if kind == "編集提案":
+              subprocess.run(
+                  ["gh", "api", f"repos/{os.environ['GITHUB_REPOSITORY']}/issues/{os.environ['N']}/labels",
+                   "--method", "POST", "-f", "labels[]=llm-task"],
+                  check=True, capture_output=True)
+              print("auto-labeled llm-task (edit proposal from GitHub form)")
+          else:
+              print(f"kind={kind!r} -> manual triage (triage label only)")
+          EOF
+        env:
+          GH_TOKEN: ${{ github.token }}
