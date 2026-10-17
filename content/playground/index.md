@@ -44,6 +44,7 @@ Playground 内のページは自由に作成・改変して構いません。代
 
 - [[promotion]] — Playground と Core をつなぐ「昇格」プロトコルの設計図（たたき台）
 - [[hypothesis-template]] — 仮説メモの書式テンプレート
+- [[kouzetsu]] — 【口舌】の正体（未検証の問い・材料なしで「問い」として置く）
 
 ## 来歴（provenance）
 
