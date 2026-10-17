@@ -20,12 +20,16 @@ jobs:
           "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
           CPID=$!
           sleep 90
-          PY=$(tasklist //fo csv //fi "IMAGENAME eq python.exe" | tr -d '"' | awk -F',' 'NR>1 && $2+0>0 {print $2}' | while read p; do
-                 ct=$(powershell -NoProfile -Command "(Get-CimInstance Win32_Process -Filter 'ProcessId=$p').CreationDate.ToString('yyyyMMddHHmmss')" 2>/dev/null | tr -dc '0-9')
-                 echo "$ct $p"
-               done | sort | tail -1 | cut -d' ' -f2)
-          echo "latest python pid=$PY"
-          "$PYSPY_EXE" dump --pid "$PY" 2>&1 | head -70
+          tasklist //v //fo csv //fi "IMAGENAME eq python.exe" | tr -d '"' | awk -F',' 'NR>1 {print $6","$2}' | while read line; do
+            ct=${line%%,*}; pid=${line##*,}
+            h=$(echo "$ct" | cut -d: -f1); m=$(echo "$ct" | cut -d: -f2); s=$(echo "$ct" | cut -d: -f3)
+            echo $((10#$h*3600 + 10#$m*60 + 10#$s)) "$pid"
+          done | sort -rn | head -3 | awk '{print $2}' > "$RUNNER_TEMP/pys.txt"
+          cat "$RUNNER_TEMP/pys.txt"
+          for p in $(cat "$RUNNER_TEMP/pys.txt"); do
+            echo "=== dump pid=$p ==="
+            "$PYSPY_EXE" dump --pid "$p" 2>&1 | head -45
+          done
           wc -c "$RUNNER_TEMP/chat1.log"
           taskkill //T //F //PID $CPID 2>&1 | head -2
           exit 0
