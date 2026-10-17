@@ -20,7 +20,7 @@ jobs:
           "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
           CPID=$!
           sleep 90
-          powershell -NoProfile "Get-Process python -ErrorAction SilentlyContinue | Sort-Object CPU -Descending | Select-Object -First 3 -ExpandProperty Id" > "$RUNNER_TEMP/pys.txt"
+          powershell -NoProfile "Get-Process python -ErrorAction SilentlyContinue | Sort-Object CPU -Descending | Select-Object -First 3 -ExpandProperty Id" | tr -dc '0-9\n' > "$RUNNER_TEMP/pys.txt"
           cat "$RUNNER_TEMP/pys.txt"
           for p in $(cat "$RUNNER_TEMP/pys.txt"); do
             echo "=== dump pid=$p ==="
