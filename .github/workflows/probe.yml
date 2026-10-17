@@ -32,10 +32,10 @@ jobs:
           EOF
           rm -f "$HERMES_HOME/auth.lock" "$HERMES_HOME"/*.lock 2>/dev/null || true
           export HOME="$RUNNER_TEMP/fakehome"; mkdir -p "$HOME"; export TMPUSERPROFILE="$HOME"
-          echo "=== chat #1 (cold) ==="
-          timeout 420 stdbuf -oL -eL "$HERMES_BIN" chat -q "reply with exactly OK" 2>&1 | tee "$RUNNER_TEMP/chat1.log" | tail -30
+          echo "=== chat safe-mode ==="
+          timeout 120 stdbuf -oL -eL "$HERMES_BIN" chat -q --safe-mode "reply with exactly OK" 2>&1 | tee "$RUNNER_TEMP/chat1.log" | tail -30
           echo "CHAT1_RC=$?"
-          echo "=== chat #2 (warm) ==="
-          timeout 240 stdbuf -oL -eL "$HERMES_BIN" chat -q "reply with exactly OK" 2>&1 | tee "$RUNNER_TEMP/chat2.log" | tail -30
+          echo "=== chat with -v ==="
+          timeout 240 stdbuf -oL -eL "$HERMES_BIN" chat -q -v "reply with exactly OK" 2>&1 | tee "$RUNNER_TEMP/chat2.log" | tail -40
           echo "CHAT2_RC=$?"
           exit 0
