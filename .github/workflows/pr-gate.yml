@@ -37,14 +37,15 @@ jobs:
           npm ci
           npx quartz build
 
-  # Merge on the self-hosted Windows service runner so the owner PAT file is
-  # reachable. Merges must land as owner pushes: GITHUB_TOKEN merges do NOT
-  # fire the post-merge audit + deploy workflows.
+  # Merge on the self-hosted Windows service runner. Merges must land as owner
+  # pushes: GITHUB_TOKEN merges do NOT fire the post-merge audit + deploy
+  # workflows. The PAT comes from the repo secret PAT_TOKEN (set in Settings →
+  # Secrets and variables → Actions) — the runner user cannot read any PAT file.
   merge:
     needs: gate
     runs-on: [self-hosted, Windows, X64]
     env:
-      PAT_FILE: C:/Users/d5dx/AppData/Local/hermes/profiles/awiki2/secrets/ghtok.txt
+      PAT: ${{ secrets.PAT_TOKEN }}
       N: ${{ github.event.pull_request.number }}
       VERDICT: ${{ needs.gate.outputs.verdict }}
       BUILD: ${{ needs.gate.outputs.build }}
@@ -57,7 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           API="https://api.github.com/repos/$REPO"
-          PAT=$(tr -d '\r\n' < "$PAT_FILE")
+          : "${PAT:?PAT_TOKEN secret is not set}"
           comment() {
             payload=$(python -c 'import json,sys;print(json.dumps({"body":sys.argv[1]}))' "$1")
             curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
