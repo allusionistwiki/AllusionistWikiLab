@@ -45,6 +45,7 @@ Playground 内のページは自由に作成・改変して構いません。代
 - [[promotion]] — Playground と Core をつなぐ「昇格」プロトコルの設計図（たたき台）
 - [[hypothesis-template]] — 仮説メモの書式テンプレート
 - [[kouzetsu]] — 【口舌】の正体（原文 ¶ 照合で確定化した事実＋未検証の推察を併記・`promotion-candidate`）
+- [[rakulraal-seat]] — 第一位のラクルラールの座は誰が勝ち取ったのか（4 章ラスト・イツノとマラコーダの会話／原文 ¶ 照合・`promotion-candidate`）
 
 ## 来歴（provenance）
 
