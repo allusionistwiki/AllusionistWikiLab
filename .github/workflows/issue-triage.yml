@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Auto-label edit proposals
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           N: ${{ github.event.issue.number }}
           BODY: ${{ github.event.issue.body }}
         shell: bash
