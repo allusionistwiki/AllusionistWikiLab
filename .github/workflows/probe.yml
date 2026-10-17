@@ -14,31 +14,17 @@ jobs:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
           HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
         run: |
-          set -x
-          whoami
-          echo "USERPROFILE=$USERPROFILE HOME=$HOME"
-          test -w "$HOME" && echo HOME_WRITABLE
-          KEY=$(grep -o 'HERMES_CUSTOM_STRATA_API_KEY=.*' "$HERMES_HOME/.env" | cut -d= -f2-)
-          echo "keylen=${#KEY}"
-          curl -s -m 8 -H "Authorization: Bearer $KEY" http://127.0.0.1:8080/v1/models | head -c 200
-          echo
-          python - <<'EOF'
-          import sqlite3
-          try:
-              c = sqlite3.connect(r"C:/Users/d5dx/AppData/Local/hermes/profiles/wiki-runner/state.db", timeout=3)
-              print("sqlite OK", c.execute("select count(*) from sessions").fetchone())
-          except Exception as e:
-              print("sqlite FAIL", e)
-          EOF
-          rm -f "$HERMES_HOME/auth.lock" "$HERMES_HOME"/*.lock 2>/dev/null || true
-          export HOME="$RUNNER_TEMP/fakehome"; mkdir -p "$HOME"; export TMPUSERPROFILE="$HOME"
-          echo "=== chat unbuffered ==="
+          set -uo pipefail
           export PYTHONUNBUFFERED=1
-          set +e
-          timeout 300 "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1
-          rc=$?
-          set -e
-          echo "CHAT1_RC=$rc"
-          echo "--- chat1.log tail ---"
-          tail -40 "$RUNNER_TEMP/chat1.log"
+          "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
+          CPID=$!
+          sleep 45
+          echo "=== windowed procs ==="
+          tasklist //v //fo csv 2>/dev/null | grep -ai "python\|hermes\|uv" | head -12
+          echo "=== tree ==="
+          tasklist //fo tree 2>/dev/null | grep -ai "python\|hermes\|uv\|conhost\|cmd" | head -20
+          echo "=== chat1.log ==="
+          wc -c "$RUNNER_TEMP/chat1.log"
+          tail -10 "$RUNNER_TEMP/chat1.log"
+          taskkill //T //F //PID $CPID 2>&1 | head -3
           exit 0
