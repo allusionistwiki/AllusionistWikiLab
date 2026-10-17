@@ -6,7 +6,7 @@ jobs:
   probe:
     if: startsWith(github.event.issue.title, 'probe-runner')
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - name: probe
         shell: bash
@@ -32,6 +32,10 @@ jobs:
           EOF
           rm -f "$HERMES_HOME/auth.lock" "$HERMES_HOME"/*.lock 2>/dev/null || true
           export HOME="$RUNNER_TEMP/fakehome"; mkdir -p "$HOME"; export TMPUSERPROFILE="$HOME"
-          timeout 150 "$HERMES_BIN" chat -q -v "reply with exactly OK" 2>&1 | tail -20
-          echo "CHAT_RC=$?"
+          echo "=== chat #1 (cold) ==="
+          timeout 420 stdbuf -oL -eL "$HERMES_BIN" chat -q "reply with exactly OK" 2>&1 | tee "$RUNNER_TEMP/chat1.log" | tail -30
+          echo "CHAT1_RC=$?"
+          echo "=== chat #2 (warm) ==="
+          timeout 240 stdbuf -oL -eL "$HERMES_BIN" chat -q "reply with exactly OK" 2>&1 | tee "$RUNNER_TEMP/chat2.log" | tail -30
+          echo "CHAT2_RC=$?"
           exit 0
