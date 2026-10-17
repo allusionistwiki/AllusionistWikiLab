@@ -32,6 +32,8 @@ jobs:
         id: guard
         shell: bash
         run: |
+          echo "PATH=$PATH"
+          command -v python || echo NO-PYTHON
           sha="${{ github.sha }}"
           msg=$(git log -1 --format=%s)
           author=$(git log -1 --format=%ae)
