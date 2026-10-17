@@ -68,8 +68,9 @@ jobs:
         shell: bash
         env:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
+          HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
         run: |
-          hermes chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tail -25
+          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tail -25
 
       - name: Report
         shell: bash
@@ -145,8 +146,9 @@ jobs:
         shell: bash
         env:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
+          HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
         run: |
-          hermes chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tail -25
+          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tail -25
 
       - name: Open PR from implementation
         env:
