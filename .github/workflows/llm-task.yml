@@ -70,7 +70,8 @@ jobs:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
           HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
         run: |
-          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tail -25
+          set -o pipefail
+          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tee "$RUNNER_TEMP/hermes-out.log" | tail -25
 
       - name: Report
         shell: bash
@@ -148,7 +149,8 @@ jobs:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
           HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
         run: |
-          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tail -25
+          set -o pipefail
+          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tee "$RUNNER_TEMP/hermes-out.log" | tail -25
 
       - name: Open PR from implementation
         env:
@@ -157,7 +159,17 @@ jobs:
           TITLE: ${{ github.event.issue.title }}
         shell: bash
         run: |
-          python - "${{ github.event.issue.number }}" <<'PY'
+          set -uo pipefail
+          n="${{ github.event.issue.number }}"
+          git add -A >/dev/null 2>&1 || true
+          HAS_CHANGES=0
+          if ! git diff --cached --quiet; then
+            git -c user.name=allusionistwiki-bot -c user.email=bot@allusionistwiki.local commit -m "llm: implement issue #$n" >/dev/null && HAS_CHANGES=1
+          fi
+          git push origin HEAD >/dev/null 2>&1 || true
+          if git ls-remote --exit-code --heads origin "llm-issue-$n" >/dev/null 2>&1; then HAS_CHANGES=1; fi
+          export HAS_CHANGES
+          python - "$n" <<'PY'
           import json, sys, os, urllib.request
           n = sys.argv[1]
           tok = os.environ["TOK"]
@@ -178,6 +190,11 @@ jobs:
                   print("HTTP", e.code, "on", method, path)
                   print(e.read().decode("utf-8", "replace")[:500])
                   raise
+          if os.environ.get("HAS_CHANGES") != "1":
+              api("/repos/" + repo + "/issues/" + n + "/comments", "POST", {
+                  "body": "llm-task: 実装エージェントは差分を作成しませんでした（タスク内容が不十分/対象不明の可能性）。内容追記で再実行してください。"})
+              print("no implementation changes -> commented, no PR")
+              sys.exit(0)
           head = "llm-issue-" + n
           pr = next((p for p in api("/repos/" + repo + "/pulls?state=open&per_page=100")
                      if p["head"]["ref"] == head), None)
