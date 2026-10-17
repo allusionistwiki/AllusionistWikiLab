@@ -35,7 +35,7 @@ TALLY_KINDS = {
     "a62d97b9-56e2-4bcb-9373-7ed40b022845": "編集提案",
     "ff2217fb-7993-4a69-9355-b27348b54054": "情報提供（典拠付き）",
 }
-SCRATCH = r"C:/Users/d5dx/AppData/Local/hermes/profiles/awiki2/cache/scratch"
+SCRATCH = r"C:/Users/d5dx/AppData/Local/hermes/profiles/awiki2/secrets"
 STATE_FILE = os.path.join(SCRATCH, "collect_state.json")
 TALLY_TOKEN_FILE = os.path.join(SCRATCH, "tallytok.txt")
 GH_TOKEN_FILE = os.path.join(SCRATCH, "ghtok.txt")
