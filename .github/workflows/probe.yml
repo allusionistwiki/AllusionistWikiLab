@@ -16,11 +16,20 @@ jobs:
         run: |
           set -x
           whoami
-          command -v python
-          python --version
-          "$HERMES_BIN" --version 2>&1 | tail -3
-          echo hi-task | "$HERMES_BIN" chat -q "say OK" 2>&1 | tail -6
-          echo "PIPE_EXIT=$?"
-          tasklist //fi "IMAGENAME eq hermes.exe" 2>&1 | tail -3
-          tasklist //fi "IMAGENAME eq python.exe" 2>&1 | tail -3
+          echo "USERPROFILE=$USERPROFILE HOME=$HOME"
+          test -w "$HOME" && echo HOME_WRITABLE
+          KEY=$(grep -o 'HERMES_CUSTOM_STRATA_API_KEY=.*' "$HERMES_HOME/.env" | cut -d= -f2-)
+          echo "keylen=${#KEY}"
+          curl -s -m 8 -H "Authorization: Bearer $KEY" http://127.0.0.1:8080/v1/models | head -c 200
+          echo
+          python - <<'EOF'
+          import sqlite3
+          try:
+              c = sqlite3.connect(r"C:/Users/d5dx/AppData/Local/hermes/profiles/wiki-runner/state.db", timeout=3)
+              print("sqlite OK", c.execute("select count(*) from sessions").fetchone())
+          except Exception as e:
+              print("sqlite FAIL", e)
+          EOF
+          timeout 90 "$HERMES_BIN" chat -q "reply with exactly OK" 2>&1 | tail -8
+          echo "CHAT_RC=$?"
           exit 0
