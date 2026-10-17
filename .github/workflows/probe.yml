@@ -20,11 +20,7 @@ jobs:
           "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
           CPID=$!
           sleep 90
-          tasklist //v //fo csv //fi "IMAGENAME eq python.exe" | tr -d '"' | awk -F',' 'NR>1 {print $6","$2}' | while read line; do
-            ct=${line%%,*}; pid=${line##*,}
-            h=$(echo "$ct" | cut -d: -f1); m=$(echo "$ct" | cut -d: -f2); s=$(echo "$ct" | cut -d: -f3)
-            echo $((10#$h*3600 + 10#$m*60 + 10#$s)) "$pid"
-          done | sort -rn | head -3 | awk '{print $2}' > "$RUNNER_TEMP/pys.txt"
+          powershell -NoProfile "Get-Process python -ErrorAction SilentlyContinue | Sort-Object CPU -Descending | Select-Object -First 3 -ExpandProperty Id" > "$RUNNER_TEMP/pys.txt"
           cat "$RUNNER_TEMP/pys.txt"
           for p in $(cat "$RUNNER_TEMP/pys.txt"); do
             echo "=== dump pid=$p ==="
