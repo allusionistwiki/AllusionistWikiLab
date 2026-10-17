@@ -16,8 +16,14 @@ jobs:
         run: |
           set -uo pipefail
           export PYTHONUNBUFFERED=1
-          echo "start=$(date +%T)"
-          timeout 900 "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1
-          echo "CHAT_RC=$? end=$(date +%T)"
-          tail -25 "$RUNNER_TEMP/chat1.log"
+          "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
+          CPID=$!
+          sleep 90
+          PY=$(wmic process where "name='python.exe'" get processid,creationdate /format:csv 2>/dev/null | tail -2 | head -1 | cut -d, -f2)
+          echo "latest python pid=$PY"
+          UV="C:/Users/d5dx/AppData/Local/hermes/bin/uv.exe"
+          test -x "$UV" || UV=uv
+          "$UV" tool run --from py-spy py-spy dump --pid "$PY" 2>&1 | head -60
+          wc -c "$RUNNER_TEMP/chat1.log"
+          taskkill //T //F //PID $CPID 2>&1 | head -2
           exit 0
