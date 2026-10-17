@@ -1,0 +1,26 @@
+name: Runner env probe
+on:
+  issues:
+    types: [opened]
+jobs:
+  probe:
+    if: startsWith(github.event.issue.title, 'probe-runner')
+    runs-on: [self-hosted, Windows, X64]
+    timeout-minutes: 5
+    steps:
+      - name: probe
+        shell: bash
+        env:
+          HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
+          HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
+        run: |
+          set -x
+          whoami
+          command -v python
+          python --version
+          "$HERMES_BIN" --version 2>&1 | tail -3
+          echo hi-task | "$HERMES_BIN" chat -q "say OK" 2>&1 | tail -6
+          echo "PIPE_EXIT=$?"
+          tasklist //fi "IMAGENAME eq hermes.exe" 2>&1 | tail -3
+          tasklist //fi "IMAGENAME eq python.exe" 2>&1 | tail -3
+          exit 0
