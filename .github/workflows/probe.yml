@@ -30,6 +30,8 @@ jobs:
           except Exception as e:
               print("sqlite FAIL", e)
           EOF
-          timeout 90 "$HERMES_BIN" chat -q "reply with exactly OK" 2>&1 | tail -8
+          rm -f "$HERMES_HOME/auth.lock" "$HERMES_HOME"/*.lock 2>/dev/null || true
+          export HOME="$RUNNER_TEMP/fakehome"; mkdir -p "$HOME"; export TMPUSERPROFILE="$HOME"
+          timeout 150 "$HERMES_BIN" chat -q -v "reply with exactly OK" 2>&1 | tail -20
           echo "CHAT_RC=$?"
           exit 0
