@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Auto-label edit proposals
         env:
+          GH_TOKEN: ${{ github.token }}
           N: ${{ github.event.issue.number }}
           BODY: ${{ github.event.issue.body }}
         shell: bash
@@ -32,5 +33,3 @@ jobs:
           else:
               print(f"kind={kind!r} -> manual triage (triage label only)")
           EOF
-        env:
-          GH_TOKEN: ${{ github.token }}
