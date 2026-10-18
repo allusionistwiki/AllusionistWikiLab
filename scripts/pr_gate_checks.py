@@ -53,6 +53,7 @@ XSS_PATTERNS = (
     re.compile(r"<\s*(script|iframe|object|embed|meta|link)\b", re.I),
     re.compile(r"\son[a-z]+\s*=", re.I),
     re.compile(r"javascript:", re.I),
+    re.compile(r"vbscript:", re.I),
     re.compile(r"data:text/html", re.I),
 )
 

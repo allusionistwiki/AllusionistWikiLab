@@ -57,7 +57,7 @@ def main() -> int:
     oversized = len(patch) > 20000
     diff = patch[:20000]
 
-    out = git("show", "--quiet", sha)  # validate sha exists
+    out = git("show", "--quiet", sha)  # noqa: B018 — validate sha exists (git() raises on failure)
     r = subprocess.run(
         [sys.executable, "scripts/pr_gate_checks.py", sha + "^1", sha],
         capture_output=True,

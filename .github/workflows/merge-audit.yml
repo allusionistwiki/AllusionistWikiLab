@@ -91,7 +91,7 @@ jobs:
           set -uo pipefail
           git config user.name "allusionistwiki"
           git config user.email "allusionist.wiki@gmail.com"
-          git pull --rebase
+          git pull --rebase || echo "::warning::rebase before revert failed (reverting local view)"
           SHA="${{ github.sha }}"
           # Squash merges land single-parent commits: -m 1 is merge-only.
           n=$(git rev-list --parents -n1 "$SHA" | wc -w)
@@ -128,7 +128,7 @@ jobs:
         run: |
           VERDICT="${VERDICT:-UNKNOWN}"
           REASON="${REASON:-no reason (audit step did not complete)}"
-          git pull --rebase
+          git pull --rebase || echo "::warning::rebase before audit-log append failed (appending local view)"
           mkdir -p audit
           python - <<'PY'
           import json, os, datetime

@@ -126,7 +126,10 @@ def test_xss_pattern_fails(tmp_path):
     repo = make_repo(tmp_path)
     base = git(repo, "rev-parse", "HEAD")
     page = repo / "content" / "evil.md"
-    page.write_text("ok\n<script>alert(1)</script>\n", encoding="utf-8")
+    page.write_text(
+        "ok\n<script>alert(1)</script>\n<a href=\"vbscript:msgbox\">x</a>\n",
+        encoding="utf-8",
+    )
     head = commit_change(repo)
     verdict, reasons, _ = run_gate(repo, base, head)
     assert verdict == "FAIL" and "xss" in reasons
