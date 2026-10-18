@@ -21,13 +21,21 @@ import urllib.request
 
 
 def sh(cmd: str) -> str:
-    return subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+    out = subprocess.run(cmd, shell=True, capture_output=True, text=True).stdout
+    return out if isinstance(out, str) else ""
 
 
 def main() -> int:
     sha = sys.argv[1]
-    stat = sh(f"git show {sha} -m --first-parent --stat")[:2000]
-    diff = sh(f"git show {sha} -m --first-parent --patch")[:20000]
+    stat = sh(f"git show {sha} -m --first-parent --stat")
+    if not stat.strip():
+        # A plain (non-merge) push commit prints nothing with -m --first-parent.
+        stat = sh(f"git show {sha} --stat")
+    stat = stat[:2000]
+    diff = sh(f"git show {sha} -m --first-parent --patch")
+    if not diff.strip():
+        diff = sh(f"git show {sha} --patch")
+    diff = diff[:20000]
 
     out = sh(f'"{sys.executable}" scripts/pr_gate_checks.py {sha}^1 {sha}')
     verdict, reason = "PASS", "heuristic ok"

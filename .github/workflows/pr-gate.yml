@@ -70,11 +70,11 @@ jobs:
               comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
             else
               comment "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$VERDICT build=$BUILD"
-              code=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d '{"merge_method":"squash"}' "$API/pulls/$N/merge")
+              code=$(curl -s -o /dev/null -w "%{http_code}" -X PUT -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -d '{"merge_method":"squash"}' "$API/pulls/$N/merge")
               echo "merge http=$code"
               [ "$code" = "204" ] || exit 1
-              head_ref=$(curl -s -H "Authorization: Bearer $PAT" "$API/pulls/$N" | python -c "import sys,json;print(json.load(sys.stdin)['head']['ref'])")
-              curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $PAT" "$API/git/refs/heads/$head_ref" || true
+              head_ref=$(curl -s -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/pulls/$N" | python -c "import sys,json;print(json.load(sys.stdin)['head']['ref'])")
+              curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/git/refs/heads/$head_ref" || true
             fi
           else
             curl -s -o /dev/null -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Content-Type: application/json" -d "{\"action\":\"request_changes\",\"body\":\"pr-gate FAIL: verdict=$VERDICT build=$BUILD — $REASONS\"}" "$API/pulls/$N/reviews" || true
