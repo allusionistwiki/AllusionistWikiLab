@@ -105,17 +105,26 @@ jobs:
       - name: Comment on source PR
         if: steps.audit.outputs.verdict == 'REJECT'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GHTOKEN: ${{ github.token }}
           REASON: ${{ steps.audit.outputs.reason }}
           SHA: ${{ github.sha }}
           IS_OWNER: ${{ steps.guard.outputs.is_owner }}
+          REPO: ${{ github.repository }}
         shell: bash
         run: |
-          n=$(gh api "repos/${{ github.repository }}/commits/${SHA}/pulls" --jq '.[0].number')
+          # service-runner PATH has no gh CLI: curl only.
+          API="https://api.github.com/repos/$REPO"
+          : "${GHTOKEN:?github.token unavailable}"
+          n=$(curl -s -H "Authorization: Bearer $GHTOKEN" -H "Accept: application/vnd.github+json" "$API/commits/$SHA/pulls" | python -c "import json,sys; d=json.load(sys.stdin); print(d[0]['number'] if d else '')")
           mode="reverted"
           if [ "$IS_OWNER" = "true" ]; then mode="ADVISORY (owner edit, not reverted)"; fi
           if [ -n "$n" ]; then
-            gh pr comment "$n" --body "Post-merge audit REJECT ($mode): $REASON — commit $SHA"
+            python - "$REASON" "$SHA" "$mode" "$RUNNER_TEMP/abody.json" <<'PY'
+          import json, sys
+          reason, sha, mode, out = sys.argv[1:5]
+          json.dump({"body": f"Post-merge audit REJECT ({mode}): {reason} — commit {sha}"}, open(out, "w", encoding="utf-8"))
+          PY
+            curl -s -o /dev/null -X POST -H "Authorization: Bearer $GHTOKEN" -H "Content-Type: application/json" --data @"$RUNNER_TEMP/abody.json" "$API/issues/$n/comments"
           fi
 
       - name: Append audit log
