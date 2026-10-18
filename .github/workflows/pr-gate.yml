@@ -82,7 +82,7 @@ jobs:
           fetch() {
             # fetch JSON with retry (GitHub commit API can transiently 404 for 1-2 min after bot merge commits)
             for i in $(seq 1 12); do
-              code=$(curl -s -o "$2" -w "%{http_code}" -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$1")
+              code=$(curl -s -o "$2" -w "%{http_code}" -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$1")
               if python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); sys.exit(1 if ('message' in d and 'sha' not in d) else 0)" "$2"; then return 0; fi
               echo "fetch-attempt $i url=$1 http=$code body=$(head -c 120 "$2" 2>/dev/null)"
               sleep 15
@@ -102,7 +102,7 @@ jobs:
               code=$(curl -s -o /dev/null -w "%{http_code}" -X PUT -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -d '{"merge_method":"squash"}' "$API/pulls/$N/merge")
               echo "merge http=$code"
               [ "$code" = "204" ] || exit 1
-              head_ref=$(curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$API/pulls/$N" -o "$RUNNER_TEMP/pr.json" && python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))['head']['ref'])" "$RUNNER_TEMP/pr.json")
+              head_ref=$(curl -s -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/pulls/$N" -o "$RUNNER_TEMP/pr.json" && python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))['head']['ref'])" "$RUNNER_TEMP/pr.json")
               curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/git/refs/heads/$head_ref" || true
             fi
           else
