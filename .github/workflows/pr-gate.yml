@@ -63,8 +63,8 @@ jobs:
             payload=$(python -c 'import json,sys;print(json.dumps({"body":sys.argv[1]}))' "$1")
             curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
           }
-          labels=$(curl -s -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/issues/$N" | python -c "import sys,json;print(','.join(l['name'] for l in json.load(sys.stdin).get('labels',[])))")
-          headmsg=$(curl -s -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/commits/$HEAD_SHA" | python -c "import sys,json;print(json.load(sys.stdin)['commit']['message'].splitlines()[0])")
+          labels=$(curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$API/issues/$N" -o "$RUNNER_TEMP/issue.json" && python -c "import json;print(','.join(l['name'] for l in json.load(open('$RUNNER_TEMP/issue.json', encoding='utf-8')).get('labels',[])))")
+          headmsg=$(curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$API/commits/$HEAD_SHA" -o "$RUNNER_TEMP/commit.json" && python -c "import json;print(json.load(open('$RUNNER_TEMP/commit.json', encoding='utf-8'))['commit']['message'].splitlines()[0])")
           if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
               comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
@@ -73,7 +73,7 @@ jobs:
               code=$(curl -s -o /dev/null -w "%{http_code}" -X PUT -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" -d '{"merge_method":"squash"}' "$API/pulls/$N/merge")
               echo "merge http=$code"
               [ "$code" = "204" ] || exit 1
-              head_ref=$(curl -s -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/pulls/$N" | python -c "import sys,json;print(json.load(sys.stdin)['head']['ref'])")
+              head_ref=$(curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$API/pulls/$N" -o "$RUNNER_TEMP/pr.json" && python -c "import json;print(json.load(open('$RUNNER_TEMP/pr.json', encoding='utf-8'))['head']['ref'])")
               curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/git/refs/heads/$head_ref" || true
             fi
           else
