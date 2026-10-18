@@ -21,6 +21,8 @@ Issue #63（Tally 編集提案フォーム経由・依頼者 allusionistwiki）�
 
 Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証」を依頼する（前回の実装 [[gogmagog]]（Issue #63 分）は原文照合を伴わない `exploring` であった）。本節は Issue #63 分の外部伝承整理（下記 §5 を継承）を土台に、原文 ¶ 照合・作中内部資料の照会・本番 Wiki 記述の照合を実施した結果を置く。
 
+Issue #73（依頼者 allusionistwiki・編集提案）は依頼の前提を特定する: 上記依頼引用文（Issue #63 分）の「Wiki によると」の **Wiki は Wikipedia のことであり AllusionistWiki ではない**。すなわち「ゴグマゴグ＝イギリス伝承の巨人」という記述は本番 Wiki ではなく Wikipedia 記事 [Gogmagog (giant)](https://en.wikipedia.org/wiki/Gogmagog_(giant)) の記述である。本実装はこの特定を 2026-10-18 に検証し、§3 の判定を「典拠特定不能」から「典拠特定済み（Wikipedia）」へ改訂した。
+
 ## 2. 原文照合（確定事実・¶ 出典付き）
 
 照合対象・照合方法：`AllusionistWiki_raw` の pdf 版（単行本）・kakuyomu 版・なろう版全文に「ゴグ」を全文検索（2026-10-18 実施）。**作中での「ゴグマゴグ」の出現は全 3 版ともに 5-15 と 5-26 の 2 箇所のみ**（他章に出現なし）。¶ 番号は kakuyomu 版原文ファイル末尾の段落索引 `¶N` に照合した（本番の出典表記規則に準拠・本節の照合は既存ページ [[kouzetsu]] K4（¶422）をアンカーとして索引対応を検証済み）。p 番号は L1 baseline の単行本版ページマーカーによる。
@@ -49,7 +51,7 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 - `AllusionistWiki2` / L1 vault の全文検索で「ゴグマゴグ」に当たるのは `E_term_塗壁`・`E_char_塗壁`（G3 の詠唱引用と上記分析）のみで、「イギリス伝承の巨人 Gogmagog である」とする記述は**どの Wiki にも存在しない**。伏線台帳（`MY_` 全 495 件）にゴグマゴグ関連エントリはなし。
 - 「Gogmagog」「Gog and Magog」「ゴグとマゴグ」の語で全リポジトリを検索しても一致は上記と同件数のみ（外部伝承への言及は本番 Wiki に存在しない）。
 
-**判定**：依頼が引用する「Wiki によるとイギリス伝承の Gogmagog だとされています」の典拠は特定できない（公開済みの何らかの版に存在した可能性があるが、現行リポジトリでは確認できず）。前提は**未確認**として扱う。したがって本件は「Wiki の誤りの是正」ではなく、**両系統の伝承の照合と作中用法の記述**として整理する。
+**判定（Issue #73 により改訂・2026-10-18）**：上記の無出現は Issue #73 で独立に再現した（AllusionistWiki `content/` 全文「ゴグ」0 件・「単語（一覧）」541 頁にゴグマゴグ頁なし・crawl.json のゴグマゴグ URL 1 件の HTTP -1 記録）。依頼者の特定により、依頼が引用する「Wiki によるとイギリス伝承の Gogmagog だとされています」の典拠は**Wikipedia 記事 [Gogmagog (giant)]** と特定された——同記事は「Gogmagog was a legendary giant in the Matter of Britain」（ジェフリー・オブ・モンマス『ブリテン王たちの歴史』のアルビオンの巨人の首領・12 キュービット・コリネウスに組み投げで断崖から叩き落とされる・ロンドンギルドホールの守護巨人像がのちに「Gog and Magog」へ改称）を記述し、下記 §4 の整理と内容が一致する（2026-10-18 実文確認）。よって前提の典拠は**特定済み（Wikipedia）**であり、本番 Wiki に同記述が不在である事実（上記）はその裏付けとなる。なお依頼の AI 説（聖書のゴグとマゴグ）の典拠も Wikipedia 側の記事（Gog and Magog）であり、「Wiki によると A」「AI によると B」は Wikipedia 内の別記事の対立である。したがって本件は「Wiki の誤りの是正」ではなく、**両系統の伝承の照合と作中用法の記述**として整理する（判定の方向は Issue #65 分そのまま）。
 
 ## 4. 系統 A: イギリス伝承の Gogmagog（巨人）（Issue #63 分を継承・再確認）
 
@@ -59,6 +61,7 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 - 舞台は南西: 上陸地はトットネス（デヴォン、ダート川）、コリネウスが領有するのはコーンウォール。14 世紀付加の「アルビナ物語」（*Des Grantz Geanz*）でも巨人は西端コーンウォールの脅威の像として語られる。**この系統に「北から押し寄せる」というモチーフはない**（巨人は島の西・南西側に住み、入植者を襲う構図）。
 - 16 世紀以降ロンドン: ギルドホール前を「守護する巨人」の像がパレードに登場（1554 年〜、「Gogmagog と Corineus」、1700 年頃〜現在の名「Gog と Magog」。ロードメイアーズ・ショーの籐製巨人・ギルドホールの木像 1708/1953 年作）。
 - 地名: Gogmagog Hills（ケンブリッジシャーの丘、白亜の巨人削刻「Gog とその妻 Magog」）など、**境界標の巨人**として名前が残る。
+- 語源（Issue #73 追記・2026-10-18 実文確認）: Wikipedia 記事 [Gogmagog (giant)] の語源節は「The name Gogmagog is commonly considered to be derived from the biblical characters Gog and Magog」と明記（併記: 1811 年のウェールズ年代記 *Brut Tysilio* 英訳者 Peter Roberts による Cawr-Madog「巨人（大勇士）マドグ」の転写説）。すなわち**系統 A の語名そのものが系統 B の名を吸収した形**であり、§7-4（二重アリュージョン説・A×B 合成）を外部典拠が直接支持する。
 
 ## 5. 系統 B: 聖書のゴグとマゴグ（北からの大軍・終末）（Issue #63 分を継承・再確認）
 
@@ -96,7 +99,7 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 外部典拠は**伝承そのもの**に関する来源であり、「作中がこれを引きにしている」ことの証明ではない（証明には §2 の原文 ¶ 照合と §7 の仮説の Core 審査が必要）。
 
 - Geoffrey of Monmouth, *Historia Regum Britanniae* i.16（Gogmagog 撃殺・Lam Goëmagot）— 英訳: [History of the Kings of Britain（York University 所収 Thompson 訳）](https://www.yorku.ca/inpar/geoffrey_thompson.pdf)
-- [Wikipedia: Gogmagog (giant)](https://en.wikipedia.org/wiki/Gogmagog_(giant))（伝承整理・ロンドン守護巨人・アルビナ系譜）
+- [Wikipedia: Gogmagog (giant)](https://en.wikipedia.org/wiki/Gogmagog_(giant))（伝承整理・ロンドン守護巨人・アルビナ系譜）—— **Issue #73 が特定した前提の典拠**。依頼の「Wiki によるとイギリス伝承の Gogmagog」の記述元であること・語源節の「名は聖書のゴグとマゴグに由来するとの通説」の記述を 2026-10-18 に実文確認（§1・§3・§4）
 - [Lord Mayor's Show 公式: Gog and Magog](http://lordmayorsshow.london/history/gog-and-magog)（1554 年〜のパレード・変名経緯）
 - [The Trojans at Totnes and Giants on the Hoe（John Clark, Devon Association 2016）](https://devonassoc.org.uk/wp-content/uploads/2019/01/Trojans-at-Totnes-Clark-TDA-2016.pdf)（トットネス上陸・Plymouth Hoe の巨人削刻）—— **死にリンク**（2026-10-18 確認: PDF ではなく「403 - Forbidden」の HTML ページが返される軟性失効）。Internet Archive に実体 PDF として確認できるスナップショット（2024-04-18 取得）あり: [web.archive.org 版](https://web.archive.org/web/20240418034822id_/https://devonassoc.org.uk/wp-content/uploads/2019/01/Trojans-at-Totnes-Clark-TDA-2016.pdf)
 - [BibleGateway: エゼキエル書 38 章](https://www.biblegateway.com/passage/?search=Ezekiel%2038&version=ESV)（38:2 マゴグの地のゴグ／38:6,15 北の果て／38:16 雲の如し）
@@ -119,6 +122,7 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 - [x] 伏線台帳（`MY_` 全 495 件）全文検索: ゴグマゴグ関連エントリなし
 - [x] p 番号（単行本版）の照合: p7264（5-15）／p7524（5-26）を L1 baseline のページマーカーに照合
 - [x] 外部リンク生存確認（Issue #71 依頼・2026-10-18）: §8 の外部典拠 6 件を確認（ステータス＋応答本文の語句照合）。生存 5 件・死に 1 件（devonassoc.org.uk の PDF・軟性 403）。§8 に注記と Internet Archive 代替 URL を追記
+- [x] Issue #73 依頼特定照合（2026-10-18）: 依頼の「Wiki」＝ Wikipedia（AllusionistWiki ではない）を前提典拠の実文確認により検証。無出現の独立再現（AllusionistWiki `content/` 全文「ゴグ」0 件・「単語（一覧）」541 頁・crawl.json 1 件 HTTP -1）と、Wikipedia 記事 Gogmagog (giant) の記述（イギリス伝承の巨人＋語源の聖書由来通説）の確認を実施 → §3 判定を「典拠特定不能」から「典拠特定済み（Wikipedia）」へ改訂
 - [x] 二重アリュージョン説（§7-4）の原文判定: 語形・方向・様相の対応は確認済み。Core 昇格は未実施
 - [ ] （残）「十一座」「死の地霊」「極北の実体」の系譜を扱う Core 層エンティティ/主張の起案（§2 内部資料が既に対応する `E_term_塗壁`・`E_term_トロル呪術` との統合審査）
 - [ ] （残）5-15 の連祷（¶289–293）の発話者割当ての原文判定（「両者の問答」＝オルヴァとガドールとの記述は確認済み、各連句の発話者分配は未判定）
@@ -133,6 +137,7 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 | 引用検証 | 原文 ¶ 照合は `AllusionistWiki_raw`（pdf・kakuyomu・なろう 3 版）に実施（2026-10-18）。作中内部資料は `AllusionistWiki2`／L1 vault（`AllusionistLLMWiki2`）の既存分析に照合。本番 `AllusionistWiki` の照合結果は §3 のとおり |
 | 再検証 | Issue #65 で付与された raw・Wiki 読取権限により、2026-10-18 に本ページの全引用文・¶/p 番号・Wiki 記述照合を独立に再実施。結果は全項目一致・不一致 0 件（§9 先頭項目）。本页の主張は再検証後も維持 |
 | リンク確認 | Issue #71（種別「情報提供」・依頼者 allusionistwiki）。HOST_* secrets 直参照化後の llm-task パイプライン E2E 確認を兼ね、2026-10-18 に §8 外部リンクの生存確認を実施。死にリンク 1 件（devonassoc.org.uk PDF）に注記と Internet Archive 代替 URL を追記（§8・§9）。本文の照合結論は変更なし |
+| 依頼特定 | Issue #73（種別「編集提案」・依頼者 allusionistwiki）。§1 依頼引用の「Wiki」は AllusionistWiki ではなく Wikipedia であると依頼者が特定。2026-10-18 に検証実施: 本番 Wiki 無出現の独立再現（全文「ゴグ」0 件・単語（一覧）541 頁・crawl.json HTTP -1）・Wikipedia 記事 Gogmagog (giant) の記述実文確認。§1・§3・§4・§8 に反映し、§3 判定を「典拠特定不能」から「典拠特定済み（Wikipedia）」へ改訂。語源の聖書由来通説により §7-4 を追強。本文の照合結論（§6・§7）は変更なし |
 | 審査 | `review_status: llm_verified`（LLM 自己審査による暫定承認・人間レビュー未実施） |
 
 ## 関連
