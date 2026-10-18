@@ -3,6 +3,7 @@ name: Deploy AllusionistWikiLab (Quartz) to GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore: ['.github/**', 'scripts/**', 'audit/**', '.gitignore']
   workflow_run:
     workflows: ["PR gate (mechanical)"]
     types: [completed]

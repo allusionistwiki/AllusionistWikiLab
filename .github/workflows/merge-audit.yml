@@ -88,10 +88,19 @@ jobs:
         if: steps.audit.outputs.verdict == 'REJECT' && steps.guard.outputs.is_owner != 'true'
         shell: bash
         run: |
+          set -uo pipefail
           git config user.name "allusionistwiki"
           git config user.email "allusionist.wiki@gmail.com"
-          git revert -m 1 --no-edit "${{ github.sha }}"
-          git push
+          git pull --rebase
+          SHA="${{ github.sha }}"
+          # Squash merges land single-parent commits: -m 1 is merge-only.
+          n=$(git rev-list --parents -n1 "$SHA" | wc -w)
+          if [ "$n" -gt 2 ]; then
+            git revert -m 1 --no-edit "$SHA"
+          else
+            git revert --no-edit "$SHA"
+          fi
+          git push || echo "::warning::revert push failed"
 
       - name: Comment on source PR
         if: steps.audit.outputs.verdict == 'REJECT'
@@ -110,13 +119,15 @@ jobs:
           fi
 
       - name: Append audit log
-        if: steps.guard.outputs.skip == 'false'
+        if: always() && steps.guard.outputs.skip == 'false'
         env:
           VERDICT: ${{ steps.audit.outputs.verdict }}
           REASON: ${{ steps.audit.outputs.reason }}
           SHA: ${{ github.sha }}
         shell: bash
         run: |
+          VERDICT="${VERDICT:-UNKNOWN}"
+          REASON="${REASON:-no reason (audit step did not complete)}"
           git pull --rebase
           mkdir -p audit
           python - <<'PY'
