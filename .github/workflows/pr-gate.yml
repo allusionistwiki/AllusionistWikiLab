@@ -93,7 +93,7 @@ jobs:
           labels=$(python -c "import json,sys;print(','.join(l['name'] for l in json.load(open(sys.argv[1], encoding='utf-8')).get('labels',[])))" "$RUNNER_TEMP/issue.json")
           # headmsg via PR commits endpoint (Pull requests scope); /commits/{sha} needs Contents read which the PAT lacks
           fetch "$API/pulls/$N/commits?per_page=100" "$RUNNER_TEMP/pcommits.json" || exit 1
-          headmsg=$(python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))[-1]['commit']['message'].splitlines()[0])" "$RUNNER_TEMP/pcommits.json")
+          headmsg=$(python -c "import json,sys,os;sys.stdout.reconfigure(encoding="utf-8",errors="replace");print(json.load(open(sys.argv[1], encoding='utf-8'))[-1]['commit']['message'].splitlines()[0])" "$RUNNER_TEMP/pcommits.json")
           if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
               comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
