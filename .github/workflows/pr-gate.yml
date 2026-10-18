@@ -53,6 +53,19 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       REPO: ${{ github.repository }}
     steps:
+      - name: Merge diagnostics (A/B of probe vs merge-step conditions)
+        shell: bash
+        env:
+          PAT: ${{ secrets.PAT_TOKEN }}
+        run: |
+          PAT="${PAT//[[:space:]]/}"
+          echo "diag event=${{ github.event_name }} len=${#PAT} prefix=${PAT:0:10}****"
+          c1=$(curl -s -o "$RUNNER_TEMP/d1.json" -w "%{http_code}" -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO/issues/$N")
+          echo "diag issues http=$c1 body=$(head -c 80 "$RUNNER_TEMP/d1.json")"
+          c2=$(curl -s -o "$RUNNER_TEMP/d2.json" -w "%{http_code}" -H "Authorization: Bearer github.token rendered value not available here" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO")
+          echo "diag bad-token http=$c2"
+          c3=$(curl -s -o "$RUNNER_TEMP/d3.json" -w "%{http_code}" "https://api.github.com/")
+          echo "diag no-auth http=$c3"
       - name: Review and auto-merge
         shell: bash
         run: |
