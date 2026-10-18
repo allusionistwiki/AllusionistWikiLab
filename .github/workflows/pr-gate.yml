@@ -42,8 +42,9 @@ jobs:
   # pushes: GITHUB_TOKEN merges do NOT fire the post-merge audit + deploy
   # workflows. The PAT comes from the repo secret PAT_TOKEN (set in Settings →
   # Secrets and variables → Actions) — the runner user cannot read any PAT file.
-  # All API calls go through `gh api` so the token never lands in process args,
-  # and payloads are built as JSON files (no shell interpolation of attacker text).
+  # NOTE: the service PATH has NO gh CLI — use curl only. Tokens live in bash env
+  # ($PAT), never inlined as literals. Payloads are built as JSON files by python
+  # (argv pass-through: attacker-controlled text cannot break the JSON/shell).
   merge:
     needs: gate
     if: github.event.pull_request.draft == false
@@ -62,30 +63,31 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          API="https://api.github.com/repos/$REPO"
           : "${PAT:?PAT_TOKEN secret is not set}"
           # strip copied-in whitespace/newlines from the secret value (common "Bad credentials" cause)
           PAT="${PAT//[[:space:]]/}"
-          export GH_TOKEN="$PAT"
           comment() {
-            python - "$1" > "$RUNNER_TEMP/cmt.json" <<'PY'
+            python - "$1" "$RUNNER_TEMP/cmt.json" <<'PY'
           import json, sys
-          print(json.dumps({"body": sys.argv[1]}))
+          json.dump({"body": sys.argv[1]}, open(sys.argv[2], "w", encoding="utf-8"))
           PY
-            gh api --method POST "repos/$REPO/issues/$N/comments" --input "$RUNNER_TEMP/cmt.json" > /dev/null
+            curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" --data @"$RUNNER_TEMP/cmt.json" "$API/issues/$N/comments"
           }
           fetch() {
-            # gh api with retry (commit/PR APIs transiently 404 for 1-2 min after bot merges)
+            # fetch JSON with retry (PR/commits APIs can transiently 404 for 1-2 min after bot merges)
             for i in $(seq 1 12); do
-              if gh api "$1" > "$2" 2> "$RUNNER_TEMP/fetch.err"; then return 0; fi
-              echo "fetch-attempt $i url=$1 err=$(head -c 200 "$RUNNER_TEMP/fetch.err")"
+              code=$(curl -s -o "$2" -w "%{http_code}" -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$1")
+              if [ "$code" = "200" ] && python -c "import json,sys; json.load(open(sys.argv[1],encoding='utf-8'))" "$2" 2>/dev/null; then return 0; fi
+              echo "fetch-attempt $i url=$1 http=$code body=$(head -c 120 "$2" 2>/dev/null)"
               sleep 15
             done
             return 1
           }
-          fetch "repos/$REPO/issues/$N" "$RUNNER_TEMP/issue.json" || exit 1
+          fetch "$API/issues/$N" "$RUNNER_TEMP/issue.json" || exit 1
           labels=$(python -c "import json,sys;print(','.join(l['name'] for l in json.load(open(sys.argv[1], encoding='utf-8')).get('labels',[])))" "$RUNNER_TEMP/issue.json")
           # headmsg via PR commits endpoint (Pull requests scope); /commits/{sha} needs Contents read which the PAT lacks
-          fetch "repos/$REPO/pulls/$N/commits?per_page=100" "$RUNNER_TEMP/pcommits.json" || exit 1
+          fetch "$API/pulls/$N/commits?per_page=100" "$RUNNER_TEMP/pcommits.json" || exit 1
           headmsg=$(python -c "import json,sys;print(next((c['commit']['message'].splitlines()[0] for c in json.load(open(sys.argv[1], encoding='utf-8')) if c['commit']['message'].startswith('llm-task: implement')), ''))" "$RUNNER_TEMP/pcommits.json")
           if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
@@ -93,25 +95,25 @@ jobs:
             else
               comment "pr-gate PASS (paths / deletion ratio / links / build). Auto-merged by pr-gate. verdict=$VERDICT build=$BUILD"
               # pin the audited head: a force-push after gate returns 409, merge never swallows it
-              python - "$HEAD_SHA" > "$RUNNER_TEMP/merge.json" <<'PY'
+              python - "$HEAD_SHA" "$RUNNER_TEMP/merge.json" <<'PY'
           import json, sys
-          print(json.dumps({"merge_method": "squash", "sha": sys.argv[1]}))
+          json.dump({"merge_method": "squash", "sha": sys.argv[1]}, open(sys.argv[2], "w", encoding="utf-8"))
           PY
-              merged=$(gh api --method PUT "repos/$REPO/pulls/$N/merge" --input "$RUNNER_TEMP/merge.json" --jq '.merged' || echo "false-failed")
-              echo "merge merged=$merged (head sha pinned: $HEAD_SHA)"
-              [ "$merged" = "true" ] || exit 1
-              fetch "repos/$REPO/pulls/$N" "$RUNNER_TEMP/pr.json" || exit 1
+              code=$(curl -s -o "$RUNNER_TEMP/mergeresp.json" -w "%{http_code}" -X PUT -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" -H "Content-Type: application/json" --data @"$RUNNER_TEMP/merge.json" "$API/pulls/$N/merge")
+              echo "merge http=$code body=$(head -c 200 "$RUNNER_TEMP/mergeresp.json" 2>/dev/null) (head sha pinned: $HEAD_SHA)"
+              case "$code" in 200|204) ;; *) exit 1;; esac
+              fetch "$API/pulls/$N" "$RUNNER_TEMP/pr.json" || exit 1
               head_ref=$(python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))['head']['ref'])" "$RUNNER_TEMP/pr.json")
-              gh api --method DELETE "repos/$REPO/git/refs/heads/$head_ref" > /dev/null || true
+              curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/git/refs/heads/$head_ref" || true
             fi
           else
-            python - "$REASONS" "$VERDICT" "$BUILD" > "$RUNNER_TEMP/review.json" <<'PY'
+            python - "$REASONS" "$VERDICT" "$BUILD" "$RUNNER_TEMP/review.json" <<'PY'
           import json, sys
           reasons, verdict, build = sys.argv[1:4]
-          print(json.dumps({"action": "request_changes", "body": f"pr-gate FAIL: verdict={verdict} build={build} — {reasons}"}))
+          json.dump({"action": "request_changes", "body": f"pr-gate FAIL: verdict={verdict} build={build} — {reasons}"}, open(sys.argv[4], "w", encoding="utf-8"))
           PY
             # reviews on owner-created PRs need a reviewer identity distinct from the author:
             # GITHUB_TOKEN (the bot), not the PAT.
-            GH_TOKEN="${{ github.token }}" gh api --method POST "repos/$REPO/pulls/$N/reviews" --input "$RUNNER_TEMP/review.json" > /dev/null || true
+            curl -s -o /dev/null -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Content-Type: application/json" --data @"$RUNNER_TEMP/review.json" "$API/pulls/$N/reviews" || true
             comment "pr-gate decision: verdict=$VERDICT build=$BUILD reasons=$REASONS"
           fi
