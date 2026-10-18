@@ -17,17 +17,12 @@ jobs:
         run: |
           set -uo pipefail
           export PYTHONUNBUFFERED=1
-          "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1 &
-          CPID=$!
-          sleep 60
-          powershell -NoProfile "Get-CimInstance Win32_Process -Filter \"name='python.exe'\" | Where-Object { \$_.CommandLine -like '*chat -q*' } | Select-Object -ExpandProperty ProcessId" | tr -dc '0-9\n' > "$RUNNER_TEMP/pys.txt"
-          cat "$RUNNER_TEMP/pys.txt"
+          echo "start=$(date +%T)"
           set +e
-          for p in $(cat "$RUNNER_TEMP/pys.txt"); do
-            echo "=== dump pid=$p ==="
-            "$PYSPY_EXE" dump --pid "$p" 2>&1 | head -50
-          done
+          timeout 240 "$HERMES_BIN" chat -q "reply with exactly OK" > "$RUNNER_TEMP/chat1.log" 2>&1
+          rc=$?
           set -e
+          echo "CHAT_RC=$rc end=$(date +%T)"
           wc -c "$RUNNER_TEMP/chat1.log"
-          taskkill //T //F //PID $CPID 2>&1 | head -2
+          tail -25 "$RUNNER_TEMP/chat1.log"
           exit 0
