@@ -63,8 +63,8 @@ jobs:
             payload=$(python -c 'import json,sys;print(json.dumps({"body":sys.argv[1]}))' "$1")
             curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
           }
-          labels=$(curl -s -H "Authorization: Bearer $PAT" "$API/issues/$N" | python -c "import sys,json;print(','.join(l['name'] for l in json.load(sys.stdin).get('labels',[])))")
-          headmsg=$(curl -s -H "Authorization: Bearer $PAT" "$API/commits/$HEAD_SHA" | python -c "import sys,json;print(json.load(sys.stdin)['commit']['message'].splitlines()[0])")
+          labels=$(curl -s -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/issues/$N" | python -c "import sys,json;print(','.join(l['name'] for l in json.load(sys.stdin).get('labels',[])))")
+          headmsg=$(curl -s -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "$API/commits/$HEAD_SHA" | python -c "import sys,json;print(json.load(sys.stdin)['commit']['message'].splitlines()[0])")
           if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
               comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."

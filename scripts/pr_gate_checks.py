@@ -67,6 +67,10 @@ def main() -> int:
             for m in re.finditer(r"https?://[^\s\)\]\"'<>]+", diff_text):
                 host = m.group(0).split("//")[1].split("/")[0].lower()
                 if not any(host == h or host.endswith("." + h) for h in ALLOWED_HOSTS):
+                    # Playground is the free-text layer (promotion protocol gates
+                    # quality later); scholarly citations there are expected.
+                    if path.startswith("content/playground/"):
+                        continue
                     ext_links += 1
     base_lines = int(
         sh(f"git grep -c '' {base} -- content | awk -F: '{{s+=$3}} END {{print s+0}}'").strip()
