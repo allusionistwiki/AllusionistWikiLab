@@ -2,6 +2,9 @@ name: Runner net test
 on:
   push:
     branches: ['runner-test']
+  pull_request:
+    branches: ['llm-issue-65']
+    types: [synchronize]
 jobs:
   t:
     runs-on: [self-hosted, Windows, X64]
@@ -12,7 +15,7 @@ jobs:
         shell: bash
         run: |
           PAT="${PAT//[[:space:]]/}"
-          echo "len=${#PAT} prefix=${PAT:0:10}****"
+          echo "event=${{ github.event_name }} len=${#PAT} prefix=${PAT:0:10}****"
           code=$(curl -s -o "$RUNNER_TEMP/r1.json" -w "%{http_code}" -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/allusionistwiki/AllusionistWikiLab/issues/66")
           echo "with-PAT http=$code body=$(head -c 100 "$RUNNER_TEMP/r1.json")"
           code2=$(curl -s -o "$RUNNER_TEMP/r2.json" -w "%{http_code}" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/allusionistwiki/AllusionistWikiLab/issues/66")
