@@ -63,8 +63,19 @@ jobs:
             payload=$(python -c 'import json,sys;print(json.dumps({"body":sys.argv[1]}))' "$1")
             curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
           }
-          labels=$(curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$API/issues/$N" -o "$RUNNER_TEMP/issue.json" && python -c "import json,sys;print(','.join(l['name'] for l in json.load(open(sys.argv[1], encoding='utf-8')).get('labels',[])))" "$RUNNER_TEMP/issue.json")
-          headmsg=$(curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$API/commits/$HEAD_SHA" -o "$RUNNER_TEMP/commit.json" && python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))['commit']['message'].splitlines()[0])" "$RUNNER_TEMP/commit.json")
+          fetch() {
+            # fetch JSON with retry (GitHub commit API can transiently 404 right after push)
+            for i in 1 2 3 4 5; do
+              curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$1" -o "$2"
+              if python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); sys.exit(1 if ('message' in d and 'sha' not in d) else 0)" "$2"; then return 0; fi
+              sleep 10
+            done
+            return 1
+          }
+          fetch "$API/issues/$N" "$RUNNER_TEMP/issue.json" || exit 1
+          labels=$(python -c "import json,sys;print(','.join(l['name'] for l in json.load(open(sys.argv[1], encoding='utf-8')).get('labels',[])))" "$RUNNER_TEMP/issue.json")
+          fetch "$API/commits/$HEAD_SHA" "$RUNNER_TEMP/commit.json" || exit 1
+          headmsg=$(python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))['commit']['message'].splitlines()[0])" "$RUNNER_TEMP/commit.json")
           if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
               comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
