@@ -98,11 +98,17 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 - Geoffrey of Monmouth, *Historia Regum Britanniae* i.16（Gogmagog 撃殺・Lam Goëmagot）— 英訳: [History of the Kings of Britain（York University 所収 Thompson 訳）](https://www.yorku.ca/inpar/geoffrey_thompson.pdf)
 - [Wikipedia: Gogmagog (giant)](https://en.wikipedia.org/wiki/Gogmagog_(giant))（伝承整理・ロンドン守護巨人・アルビナ系譜）
 - [Lord Mayor's Show 公式: Gog and Magog](http://lordmayorsshow.london/history/gog-and-magog)（1554 年〜のパレード・変名経緯）
-- [The Trojans at Totnes and Giants on the Hoe（John Clark, Devon Association 2016）](https://devonassoc.org.uk/wp-content/uploads/2019/01/Trojans-at-Totnes-Clark-TDA-2016.pdf)（トットネス上陸・Plymouth Hoe の巨人削刻）
+- [The Trojans at Totnes and Giants on the Hoe（John Clark, Devon Association 2016）](https://devonassoc.org.uk/wp-content/uploads/2019/01/Trojans-at-Totnes-Clark-TDA-2016.pdf)（トットネス上陸・Plymouth Hoe の巨人削刻）—— **死にリンク**（2026-10-18 確認: PDF ではなく「403 - Forbidden」の HTML ページが返される軟性失効）。Internet Archive に実体 PDF として確認できるスナップショット（2024-04-18 取得）あり: [web.archive.org 版](https://web.archive.org/web/20240418034822id_/https://devonassoc.org.uk/wp-content/uploads/2019/01/Trojans-at-Totnes-Clark-TDA-2016.pdf)
 - [BibleGateway: エゼキエル書 38 章](https://www.biblegateway.com/passage/?search=Ezekiel%2038&version=ESV)（38:2 マゴグの地のゴグ／38:6,15 北の果て／38:16 雲の如し）
 - [BibleHub: Ezekiel 38–39 と Revelation 20:8 の対応](https://biblehub.com/q/Ezekiel_38-39_link_to_Rev_20_8_s_Gog_Magog.htm)
 - クルアーン 18:94・21:96（ヤージュージュとマージュージュ）
 - Victor I. Scherb, "Assimilating Giants: The Appropriation of Gog and Magog in Medieval and Early Modern England," *JMEMS* 32:1 (2002)（イギリス巨人系への聖書名の吸収）
+
+> [!NOTE] リンク確認（Issue #71 依頼・2026-10-18 実施）
+> 本節の外部リンク 6 件を生存確認した（HTTP ステータスに加え、応答本文が実体コンテンツであることを語句照合で確認。リンク先移転のリダイレクト追跡含む）。結果は**生存 5 件・死に 1 件**。
+> - 生存: York University 所収 Thompson 訳（実体 PDF）・Wikipedia: Gogmagog (giant)（表題確認）・Lord Mayor's Show（`https://www.lordmayorsshow.london/history/gog-and-magog/` へリダイレクト、内容正常）・BibleGateway エゼキエル書 38 章（"Prophecy Against Gog" 表題確認）・BibleHub 対応頁（表題確認）。
+> - 死に: The Trojans at Totnes PDF の 1 件のみ（devonassoc.org.uk が HTTP 200 で「403 - Forbidden」ページを返す軟性失効。上記リストに注記し Internet Archive の代替 URL を併記済み）。
+> 死にリンクの典拠内容（トットネス上陸・Plymouth Hoe の巨人削刻）は系統 A の補足であり、生存典拠（York University 訳・Wikipedia）で援用可能な範囲をカバーするため、本節および §6・§7 の照合結論は変更しない。
 
 ## 9. 検証状態・checklist
 
@@ -112,6 +118,7 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 - [x] 本番 Wiki 記述の照合: 「イギリス伝承の Gogmagog」とする記述は現行リポジトリに**存在せず**（§3。crawl.json に失効 URL の記録のみ）
 - [x] 伏線台帳（`MY_` 全 495 件）全文検索: ゴグマゴグ関連エントリなし
 - [x] p 番号（単行本版）の照合: p7264（5-15）／p7524（5-26）を L1 baseline のページマーカーに照合
+- [x] 外部リンク生存確認（Issue #71 依頼・2026-10-18）: §8 の外部典拠 6 件を確認（ステータス＋応答本文の語句照合）。生存 5 件・死に 1 件（devonassoc.org.uk の PDF・軟性 403）。§8 に注記と Internet Archive 代替 URL を追記
 - [x] 二重アリュージョン説（§7-4）の原文判定: 語形・方向・様相の対応は確認済み。Core 昇格は未実施
 - [ ] （残）「十一座」「死の地霊」「極北の実体」の系譜を扱う Core 層エンティティ/主張の起案（§2 内部資料が既に対応する `E_term_塗壁`・`E_term_トロル呪術` との統合審査）
 - [ ] （残）5-15 の連祷（¶289–293）の発話者割当ての原文判定（「両者の問答」＝オルヴァとガドールとの記述は確認済み、各連句の発話者分配は未判定）
@@ -125,6 +132,7 @@ Issue #65 は「raw・Wiki の読み取り権限を付与したので再検証�
 | 実装 | llm-task（LLM 編集依頼）による改訂。Playground 層・状態 `promotion-candidate`（原文照合済み事実は §2、仮説は §7 に分层） |
 | 引用検証 | 原文 ¶ 照合は `AllusionistWiki_raw`（pdf・kakuyomu・なろう 3 版）に実施（2026-10-18）。作中内部資料は `AllusionistWiki2`／L1 vault（`AllusionistLLMWiki2`）の既存分析に照合。本番 `AllusionistWiki` の照合結果は §3 のとおり |
 | 再検証 | Issue #65 で付与された raw・Wiki 読取権限により、2026-10-18 に本ページの全引用文・¶/p 番号・Wiki 記述照合を独立に再実施。結果は全項目一致・不一致 0 件（§9 先頭項目）。本页の主張は再検証後も維持 |
+| リンク確認 | Issue #71（種別「情報提供」・依頼者 allusionistwiki）。HOST_* secrets 直参照化後の llm-task パイプライン E2E 確認を兼ね、2026-10-18 に §8 外部リンクの生存確認を実施。死にリンク 1 件（devonassoc.org.uk PDF）に注記と Internet Archive 代替 URL を追記（§8・§9）。本文の照合結論は変更なし |
 | 審査 | `review_status: llm_verified`（LLM 自己審査による暫定承認・人間レビュー未実施） |
 
 ## 関連
