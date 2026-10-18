@@ -64,11 +64,11 @@ jobs:
             curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
           }
           fetch() {
-            # fetch JSON with retry (GitHub commit API can transiently 404 right after push)
-            for i in 1 2 3 4 5; do
+            # fetch JSON with retry (GitHub commit API can transiently 404 for 1-2 min after bot merge commits)
+            for i in $(seq 1 12); do
               curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$1" -o "$2"
               if python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); sys.exit(1 if ('message' in d and 'sha' not in d) else 0)" "$2"; then return 0; fi
-              sleep 10
+              sleep 15
             done
             return 1
           }
