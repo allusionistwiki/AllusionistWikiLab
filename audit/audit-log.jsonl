@@ -62,3 +62,4 @@
 {"ts": "2026-10-18T07:35:58Z", "sha": "8b50753503530e523146973435dd99122259ef99", "verdict": "PASS", "reason": "heuristic ok"}
 {"ts": "2026-10-18T07:51:46Z", "sha": "7a9c2f031f07b70ef83fbb25e9bc9e19e5be8021", "verdict": "PASS", "reason": "heuristic ok"}
 {"ts": "2026-10-18T08:01:14Z", "sha": "9c59c6b4f8b4e99d4b78f56cf81ca3af84914ef9", "verdict": "PASS", "reason": "LLM: NEEDS_HUMAN: PAT�̐擪4������CI���O�ɏo�͂���͔̂閧�R�k���X�N������A�^�p���f�͐l�ԂɌ����Ă���B"}
+{"ts": "2026-10-18T08:18:37Z", "sha": "adfa8b1c59e6844fee987e37df3200005f1c6a40", "verdict": "PASS", "reason": "LLM: token prefix, self-hosted runner, workflow test. Human judgment desirable. So final: NEEDS_HUMAN: CI/���[�N�t���[�̔閧�g�[�N���I�o���X�N���܂ރe�X�g�ύX�ł���AWiki �ҏW�̑Ó����͐l�ԃ��r���[���]�܂����B Need one sentence. Need only line. Ensure no"}
