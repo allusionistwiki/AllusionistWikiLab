@@ -1,0 +1,23 @@
+name: Runner net test
+on:
+  push:
+    branches: ['runner-test']
+jobs:
+  t:
+    runs-on: [self-hosted, Windows, X64]
+    steps:
+      - name: test api from runner
+        env:
+          PAT: ${{ secrets.PAT_TOKEN }}
+        shell: bash
+        run: |
+          PAT="${PAT//[[:space:]]/}"
+          echo "len=${#PAT} prefix=${PAT:0:10}****"
+          code=$(curl -s -o "$RUNNER_TEMP/r1.json" -w "%{http_code}" -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/allusionistwiki/AllusionistWikiLab/issues/66")
+          echo "with-PAT http=$code body=$(head -c 100 "$RUNNER_TEMP/r1.json")"
+          code2=$(curl -s -o "$RUNNER_TEMP/r2.json" -w "%{http_code}" -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/allusionistwiki/AllusionistWikiLab/issues/66")
+          echo "with-GITHUB_TOKEN http=$code2 body=$(head -c 100 "$RUNNER_TEMP/r2.json")"
+          code3=$(curl -s -o "$RUNNER_TEMP/r3.json" -w "%{http_code}" "https://api.github.com/")
+          echo "no-auth http=$code3 body=$(head -c 100 "$RUNNER_TEMP/r3.json")"
+          code4=$(curl -s -o "$RUNNER_TEMP/r4.json" -w "%{http_code}" "https://ifconfig.co/json")
+          echo "egress http=$code4 body=$(head -c 160 "$RUNNER_TEMP/r4.json")"
