@@ -69,9 +69,10 @@ jobs:
         env:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
           HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
+          PYTHONUNBUFFERED: "1"
         run: |
           set -o pipefail
-          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tee "$RUNNER_TEMP/hermes-out.log" | tail -25
+          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tee "$RUNNER_TEMP/hermes-out.log"
 
       - name: Report
         shell: bash
@@ -148,9 +149,10 @@ jobs:
         env:
           HERMES_HOME: C:\Users\d5dx\AppData\Local\hermes\profiles\wiki-runner
           HERMES_BIN: C:/Users/d5dx/AppData/Local/hermes/hermes-agent/venv/Scripts/hermes.exe
+          PYTHONUNBUFFERED: "1"
         run: |
           set -o pipefail
-          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tee "$RUNNER_TEMP/hermes-out.log" | tail -25
+          "$HERMES_BIN" chat -q "$(cat "$RUNNER_TEMP/task.md")" 2>&1 | tee "$RUNNER_TEMP/hermes-out.log"
 
       - name: Open PR from implementation
         env:
