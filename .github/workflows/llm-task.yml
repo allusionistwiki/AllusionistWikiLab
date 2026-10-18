@@ -18,7 +18,7 @@ jobs:
   implement:
     if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'llm-task')
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -84,7 +84,7 @@ jobs:
   implement_issue:
     if: github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'llm-task') && github.event.issue.pull_request == null
     runs-on: [self-hosted, Windows, X64]
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
