@@ -66,16 +66,18 @@ jobs:
           fetch() {
             # fetch JSON with retry (GitHub commit API can transiently 404 for 1-2 min after bot merge commits)
             for i in $(seq 1 12); do
-              curl -s -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$1" -o "$2"
+              code=$(curl -s -o "$2" -w "%{http_code}" -H "Authorization: Bearer ***" -H "Accept: application/vnd.github+json" "$1")
               if python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); sys.exit(1 if ('message' in d and 'sha' not in d) else 0)" "$2"; then return 0; fi
+              echo "fetch-attempt $i url=$1 http=$code body=$(head -c 120 "$2" 2>/dev/null)"
               sleep 15
             done
             return 1
           }
           fetch "$API/issues/$N" "$RUNNER_TEMP/issue.json" || exit 1
           labels=$(python -c "import json,sys;print(','.join(l['name'] for l in json.load(open(sys.argv[1], encoding='utf-8')).get('labels',[])))" "$RUNNER_TEMP/issue.json")
-          fetch "$API/commits/$HEAD_SHA" "$RUNNER_TEMP/commit.json" || exit 1
-          headmsg=$(python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))['commit']['message'].splitlines()[0])" "$RUNNER_TEMP/commit.json")
+          # headmsg via PR commits endpoint (Pull requests scope); /commits/{sha} needs Contents read which the PAT lacks
+          fetch "$API/pulls/$N/commits?per_page=100" "$RUNNER_TEMP/pcommits.json" || exit 1
+          headmsg=$(python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))[-1]['commit']['message'].splitlines()[0])" "$RUNNER_TEMP/pcommits.json")
           if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
               comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."
