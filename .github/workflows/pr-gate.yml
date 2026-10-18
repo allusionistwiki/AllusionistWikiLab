@@ -3,6 +3,7 @@ name: PR gate (mechanical)
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: write
@@ -54,19 +55,6 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       REPO: ${{ github.repository }}
     steps:
-      - name: Merge diagnostics (A/B of probe vs merge-step conditions)
-        shell: bash
-        env:
-          PAT: ${{ secrets.PAT_TOKEN }}
-        run: |
-          PAT="${PAT//[[:space:]]/}"
-          echo "diag event=${{ github.event_name }} len=${#PAT} prefix=${PAT:0:10}****"
-          c1=$(curl -s -o "$RUNNER_TEMP/d1.json" -w "%{http_code}" -H "Authorization: Bearer $PAT" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO/issues/$N")
-          echo "diag issues http=$c1 body=$(head -c 80 "$RUNNER_TEMP/d1.json")"
-          c2=$(curl -s -o "$RUNNER_TEMP/d2.json" -w "%{http_code}" -H "Authorization: Bearer github.token rendered value not available here" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/$REPO")
-          echo "diag bad-token http=$c2"
-          c3=$(curl -s -o "$RUNNER_TEMP/d3.json" -w "%{http_code}" "https://api.github.com/")
-          echo "diag no-auth http=$c3"
       - name: Review and auto-merge
         shell: bash
         run: |
@@ -75,7 +63,6 @@ jobs:
           : "${PAT:?PAT_TOKEN secret is not set}"
           # strip copied-in whitespace/newlines from the secret value (common "Bad credentials" cause)
           PAT="${PAT//[[:space:]]/}"
-          echo "pat-fingerprint len=${#PAT} prefix=${PAT:0:4}****"
           comment() {
             payload=$(python -c 'import json,sys;print(json.dumps({"body":sys.argv[1]}))' "$1")
             curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
@@ -94,7 +81,7 @@ jobs:
           labels=$(python -c "import json,sys;print(','.join(l['name'] for l in json.load(open(sys.argv[1], encoding='utf-8')).get('labels',[])))" "$RUNNER_TEMP/issue.json")
           # headmsg via PR commits endpoint (Pull requests scope); /commits/{sha} needs Contents read which the PAT lacks
           fetch "$API/pulls/$N/commits?per_page=100" "$RUNNER_TEMP/pcommits.json" || exit 1
-          headmsg=$(python -c "import json,sys;print(json.load(open(sys.argv[1], encoding='utf-8'))[-1]['commit']['message'].splitlines()[0])" "$RUNNER_TEMP/pcommits.json")
+          headmsg=$(python -c "import json,sys;print([c['commit']['message'].splitlines()[0] for c in json.load(open(sys.argv[1], encoding='utf-8')) if c['commit']['message'].startswith('llm-task: implement')][0])" "$RUNNER_TEMP/pcommits.json")
           if [ "$VERDICT" = "PASS" ] && [ "$BUILD" = "success" ]; then
             if echo "$labels" | grep -q "llm-task" && ! echo "$headmsg" | grep -q "^llm-task: implement"; then
               comment "pr-gate PASS — llm-task PR, holding merge until LLM implementation commit lands."

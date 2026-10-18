@@ -3,6 +3,7 @@ name: Post-merge audit (LLM)
 on:
   push:
     branches: [main]
+    paths-ignore: ['.github/**', 'scripts/**', 'audit/**', '.gitignore']
   workflow_dispatch:
     inputs:
       ref:
