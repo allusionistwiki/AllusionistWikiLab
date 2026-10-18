@@ -25,18 +25,18 @@ export default (() => {
       <div class="github-links">
         <h4>報告・依頼 — 誤り / reject / 編集依頼 / 情報提供</h4>
         <ul>
-          <li>
-            <a
-              href={`https://tally.so/r/EqzzbX?url=${encodeURIComponent(pageUrl)}${claimQ}`}
-            >
-              匿名フォーム（ログイン不要・URL・主張 ID 自動入力）
-            </a>
-          </li>
           <li class="gh">
             <a
               href={`${base}/issues/new?template=reject.yml&title=${encodeURIComponent(`[${title}] `)}&page=${encodeURIComponent(pageUrl)}${claimQ}`}
             >
-              GitHub Issue（要ログイン・同じ 4 種別）
+              GitHub Issue（高速・推奨）
+            </a>
+          </li>
+          <li>
+            <a
+              href={`https://tally.so/r/EqzzbX?url=${encodeURIComponent(pageUrl)}${claimQ}`}
+            >
+              匿名フォーム（ログイン不要）
             </a>
           </li>
         </ul>
