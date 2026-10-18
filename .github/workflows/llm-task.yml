@@ -154,7 +154,7 @@ jobs:
 
       - name: Open PR from implementation
         env:
-          TOK: ${{ github.token }}
+          TOK: ${{ secrets.PAT_TOKEN }}
           AUTHOR: ${{ github.event.issue.user.login }}
           TITLE: ${{ github.event.issue.title }}
         shell: bash
