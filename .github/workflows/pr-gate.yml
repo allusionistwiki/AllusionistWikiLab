@@ -61,6 +61,7 @@ jobs:
           : "${PAT:?PAT_TOKEN secret is not set}"
           # strip copied-in whitespace/newlines from the secret value (common "Bad credentials" cause)
           PAT="${PAT//[[:space:]]/}"
+          echo "pat-fingerprint len=${#PAT} prefix=${PAT:0:4}****"
           comment() {
             payload=$(python -c 'import json,sys;print(json.dumps({"body":sys.argv[1]}))' "$1")
             curl -s -o /dev/null -X POST -H "Authorization: Bearer $PAT" -H "Content-Type: application/json" -d "$payload" "$API/issues/$N/comments"
