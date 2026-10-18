@@ -75,7 +75,13 @@ jobs:
           STRATA_API_KEY: ${{ secrets.STRATA_API_KEY }}
           STRATA_MODEL: ${{ secrets.STRATA_MODEL }}
         shell: bash
-        run: python scripts/audit_pr.py "${{ github.sha }}" >> "$GITHUB_OUTPUT"
+        run: |
+          git fetch -q origin main
+          if ! git cat-file -e "${{ github.sha }}^{commit}" 2>/dev/null; then
+            echo "audit sha ${{ github.sha }} not in checkout; fetching all refs"
+            git fetch -q --unshallow origin 2>/dev/null || git fetch -q origin "+refs/pull/*:refs/remotes/origin/pr/*"
+          fi
+          python scripts/audit_pr.py "${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
       - name: Revert on reject (third-party only)
         if: steps.audit.outputs.verdict == 'REJECT' && steps.guard.outputs.is_owner != 'true'
