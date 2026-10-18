@@ -47,7 +47,7 @@ jobs:
     env:
       PAT: ${{ secrets.PAT_TOKEN }}
       N: ${{ github.event.pull_request.number }}
-          PYTHONIOENCODING: "utf-8"
+      PYTHONIOENCODING: "utf-8"
       VERDICT: ${{ needs.gate.outputs.verdict }}
       BUILD: ${{ needs.gate.outputs.build }}
       REASONS: ${{ needs.gate.outputs.reasons }}
