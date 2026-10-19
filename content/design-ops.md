@@ -52,7 +52,7 @@ Issue (report forms: GitHub Issue / Tally 匿名フォーム → collect_reports
 
 ## 5. 自己ホスト runner（Windows）
 
-- 場所: `%USERPROFILE%\Downloads\Code\actions-runner-lab`（リポジトリ作業ツリーは `_work\awiki-runner\AllusionistWikiLab\AllusionistWikiLab`）
+- 場所: `C:\ci\actions-runner-lab`（2026-10-19 移設、Drive 直下 =用户名を含まない。ジョブログに runner パスが出るため移設)（リポジトリ作業ツリーは `_work\awiki-runner\AllusionistWikiLab\AllusionistWikiLab`）
 - サービス名: `actions.runner.allusionistwiki-AllusionistWikiLab.MAIN-DESK`（`--runasservice`、ラベル `self-hosted,Windows,X64`）
 - 並発: ルート `.env` の `RUN_SERVICE_CONCURRENT_REQUESTS_LIMIT=2`（LLM タスク中に監査が待たされないため）。**反映にはサービス再起動**（管理者で `net stop/start`）
 - **サービス runner の PATH はレジストリ** `HKLM\SYSTEM\CurrentControlSet\Services\<サービス名>\Environment`（REG_MULTI_SZ、Git/Python/Node/hermes のみを列挙）。**gh CLI は無い** — ワークフローは curl 専用。`|| true` 付きの gh 呼び出しは沈黙失敗になるので禁止
